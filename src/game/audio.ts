@@ -108,3 +108,9 @@ export function playGameOver(): void {
   notes.forEach((f, i) => tone({ freq: f, type: 'sawtooth', dur: 0.24, gain: 0.12, delay: i * 0.16 }))
   thump(0.4, notes.length * 0.16 + 0.05)
 }
+
+export function playPowerUp(): void {
+  tone({ freq: 523.25, type: 'sine', dur: 0.1, gain: 0.18 })
+  tone({ freq: 659.25, type: 'sine', dur: 0.1, gain: 0.18, delay: 0.08 })
+  tone({ freq: 783.99, type: 'sine', dur: 0.15, gain: 0.18, delay: 0.16 })
+}

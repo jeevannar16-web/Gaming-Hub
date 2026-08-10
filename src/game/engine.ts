@@ -15,12 +15,19 @@ import {
   JUMP_VEL,
   MAX_FALL,
   MAX_RUN,
+  POWERUP_DURATION,
+  SPEED_BOOST_MULT,
   circleOverlapsRect,
   rectsOverlap,
+  type BouncePad,
   type Coin,
   type LevelData,
+  type MovingPlatform,
   type Player,
+  type PowerUp,
+  type PowerUpType,
   type Rect,
+  type WindZone,
 } from './entities'
 import { KILL_Y, PLAYER_SPAWN_X } from './level'
 
@@ -63,6 +70,12 @@ interface Cloud {
 }
 
 const CONFETTI = ['#f2b233', '#ff6b6b', '#4dd2a0', '#5f8bff', '#e879f9', '#ffd166', '#ffe5b4', '#ffb6c1']
+
+function haptic(ms = 15): void {
+  if (typeof navigator !== 'undefined' && navigator.vibrate) {
+    try { navigator.vibrate(ms) } catch {}
+  }
+}
 
 const PALETTE = {
   skyTop: '#6bb5ff',
@@ -133,6 +146,11 @@ export class Game {
   private clouds: Cloud[] = []
   private prevJump = false
   private lastCheckpoint = -1
+  private movingPlatforms: MovingPlatform[] = []
+  private bouncePads: BouncePad[] = []
+  private windZones: WindZone[] = []
+  private powerUps: PowerUp[] = []
+  private powerUpTimers: Partial<Record<PowerUpType, number>> = {}
 
   constructor(level: LevelData, viewW: number, callbacks: GameCallbacks) {
     this.level = level
@@ -140,6 +158,10 @@ export class Game {
     this.callbacks = callbacks
     this.player = createPlayer(PLAYER_SPAWN_X, this.groundY() - 58)
     this.camera.snap(PLAYER_SPAWN_X)
+    this.movingPlatforms = level.movingPlatforms.map(p => ({ ...p }))
+    this.bouncePads = level.bouncePads.map(p => ({ ...p }))
+    this.windZones = level.windZones.map(z => ({ ...z }))
+    this.powerUps = level.powerUps.map(p => ({ ...p }))
     for (let i = 0; i < 26; i++) {
       this.clouds.push({
         x: Math.random() * 2400,
@@ -168,6 +190,11 @@ export class Game {
     this.player = createPlayer(PLAYER_SPAWN_X, this.groundY() - 58)
     this.player.facing = 1
     this.camera.snap(PLAYER_SPAWN_X)
+    this.movingPlatforms = this.level.movingPlatforms.map(p => ({ ...p }))
+    this.bouncePads = this.level.bouncePads.map(p => ({ ...p }))
+    this.windZones = this.level.windZones.map(z => ({ ...z }))
+    this.powerUps = this.level.powerUps.map(p => ({ ...p }))
+    this.powerUpTimers = {}
   }
 
   toMenu(): void {
@@ -198,7 +225,21 @@ export class Game {
           m.dir = 1
         }
       }
+
+      for (const mp of this.movingPlatforms) {
+        const t = (Math.sin(this.time * mp.speed * 0.001 + mp.phase) + 1) / 2
+        if (mp.axis === 'x') {
+          mp.x = mp.startX + (mp.endX - mp.startX) * t
+        } else {
+          mp.y = mp.startY + (mp.endY - mp.startY) * t
+        }
+      }
+
       this.updatePlayer(dt, input)
+      this.applyWindZones(dt)
+      this.checkBouncePads()
+      this.checkPowerUps()
+      this.updatePowerUpTimers(dt)
       this.checkInteractions()
       if (Number.isFinite(this.player.x) && Number.isFinite(this.player.y)) {
         this.camera.update(dt, this.player.x + this.player.w / 2)
@@ -214,12 +255,13 @@ export class Game {
 
   private updatePlayer(dt: number, input: InputState): void {
     const p = this.player
+    const speedMult = p.activePowerUps.includes('speedBoost') ? SPEED_BOOST_MULT : 1
     const accel = p.onGround ? ACCEL : AIR_ACCEL
     if (input.right && !input.left) {
-      p.vx = Math.min(p.vx + accel * dt, MAX_RUN)
+      p.vx = Math.min(p.vx + accel * dt * speedMult, MAX_RUN * speedMult)
       p.facing = 1
     } else if (input.left && !input.right) {
-      p.vx = Math.max(p.vx - accel * dt, -MAX_RUN)
+      p.vx = Math.max(p.vx - accel * dt * speedMult, -MAX_RUN * speedMult)
       p.facing = -1
     } else {
       const fr = p.onGround ? FRICTION : AIR_FRICTION
@@ -228,37 +270,35 @@ export class Game {
       else p.vx -= Math.sign(p.vx) * d
     }
 
-    // Coyote time: we keep the "last walked on ground" window fresh while on
-    // the ground, and let it drain while airborne so a late jump still works.
     if (p.onGround) p.coyote = COYOTE_TIME
     else p.coyote -= dt
 
-    // Jump buffering: remember a press for a short window; if it lands while
-    // still on the ground (or within coyote time) it fires.
     const jumpPressed = input.jumpHeld && !this.prevJump
     this.prevJump = input.jumpHeld
     if (jumpPressed) p.buffer = JUMP_BUFFER
     else if (p.buffer > 0) p.buffer -= dt
 
-    if (p.buffer > 0 && (p.onGround || p.coyote > 0)) {
+    if (p.buffer > 0 && (p.onGround || p.coyote > 0 || (p.activePowerUps.includes('doubleJump') && p.jumpsLeft > 0))) {
       p.vy = JUMP_VEL
       p.onGround = false
       p.coyote = 0
       p.buffer = 0
-      p.squash = 0.8 // stretch on takeoff
+      p.squash = 0.8
       audio.playJump()
+      if (!p.onGround && p.activePowerUps.includes('doubleJump')) {
+        p.jumpsLeft -= 1
+      }
     }
 
-    // Variable jump height: extra gravity while ascending with jump released.
     const g = input.jumpHeld || p.vy >= 0 ? GRAVITY : GRAVITY * 1.9
     p.vy = Math.min(p.vy + g * dt, MAX_FALL)
 
     this.moveAndCollide(p, dt)
 
-    // Squash/stretch eases back to neutral.
+    if (p.onGround) p.jumpsLeft = p.activePowerUps.includes('doubleJump') ? 2 : 1
+
     p.squash += (0 - p.squash) * Math.min(1, dt * 9)
 
-    // Motion streak timer.
     if (p.onGround && Math.abs(p.vx) > MAX_RUN * 0.78) p.runTrail = 1
     else p.runTrail = Math.max(0, p.runTrail - dt * 6)
 
@@ -299,9 +339,77 @@ export class Game {
       }
     }
 
+    for (const mp of this.movingPlatforms) {
+      if (rectsOverlap(p, mp)) {
+        if (p.vy > 0) {
+          p.y = mp.y - p.h
+          p.vy = 0
+          p.onGround = true
+          if (wasFalling) p.squash = -0.6
+        } else if (p.vy < 0) {
+          p.y = mp.y + mp.h
+          p.vy = 0
+        }
+      }
+    }
+
     if (Number.isFinite(p.x) && Number.isFinite(p.y)) {
       p.x = Math.max(0, Math.min(this.level.width - p.w, p.x))
       p.y = Math.max(-200, Math.min(KILL_Y, p.y))
+    }
+  }
+
+  private applyWindZones(dt: number): void {
+    const p = this.player
+    for (const z of this.windZones) {
+      if (rectsOverlap(p, z)) {
+        p.vx += z.force * z.direction * dt
+      }
+    }
+  }
+
+  private checkBouncePads(): void {
+    const p = this.player
+    for (const bp of this.bouncePads) {
+      if (rectsOverlap(p, bp) && p.vy >= 0) {
+        p.vy = JUMP_VEL * bp.strength
+        p.onGround = false
+        p.squash = 0.7
+        haptic(25)
+        this.spawnBurst(bp.x + bp.w / 2, bp.y, '#4dd2a0', 8)
+      }
+    }
+  }
+
+  private checkPowerUps(): void {
+    const p = this.player
+    for (const pu of this.powerUps) {
+      if (pu.collected) continue
+      if (circleOverlapsRect(pu.x, pu.y, pu.r, p)) {
+        pu.collected = true
+        this.powerUpTimers[pu.type] = POWERUP_DURATION
+        if (!p.activePowerUps.includes(pu.type)) {
+          p.activePowerUps.push(pu.type)
+        }
+        if (pu.type === 'shield') p.invuln = Math.max(p.invuln, POWERUP_DURATION)
+        haptic(10)
+        audio.playPowerUp()
+        this.spawnBurst(pu.x, pu.y, '#5f8bff', 10)
+      }
+    }
+  }
+
+  private updatePowerUpTimers(dt: number): void {
+    const p = this.player
+    for (const type of Object.keys(this.powerUpTimers) as PowerUpType[]) {
+      const remaining = this.powerUpTimers[type]
+      if (remaining === undefined || remaining <= 0) continue
+      const next = Math.max(0, remaining - dt)
+      this.powerUpTimers[type] = next
+      if (next <= 0) {
+        p.activePowerUps = p.activePowerUps.filter(t => t !== type)
+        delete this.powerUpTimers[type]
+      }
     }
   }
 
@@ -370,6 +478,7 @@ export class Game {
     audio.playWin()
     this.confetti()
     this.callbacks.onWin(this.score)
+    this.saveProgress()
   }
 
   private damage(): void {
@@ -377,13 +486,18 @@ export class Game {
     this.lives -= 1
     this.shake = 0.45
     this.player.invuln = 1.5
+    this.player.activePowerUps = []
+    this.player.powerUpTimers = {}
+    this.powerUpTimers = {}
     audio.playHit()
     this.spawnBurst(this.player.x + this.player.w / 2, this.player.y + this.player.h / 2, '#ff6b6b', 10)
+    haptic(30)
     this.callbacks.onLives(this.lives)
     if (this.lives <= 0) {
       this.mode = 'over'
       audio.playGameOver()
       this.callbacks.onGameOver(this.score)
+      this.saveProgress()
       return
     }
     this.respawn()
@@ -402,6 +516,27 @@ export class Game {
     p.vy = 0
     p.onGround = true
     this.camera.snap(p.x)
+  }
+
+  private saveProgress(): void {
+    try {
+      const data = {
+        highScore: Math.max(this.score, this.getHighScore()),
+      }
+      if (typeof localStorage !== 'undefined') {
+        localStorage.setItem('capquest_save', JSON.stringify(data))
+      }
+    } catch {}
+  }
+
+  private getHighScore(): number {
+    try {
+      if (typeof localStorage !== 'undefined') {
+        const raw = localStorage.getItem('capquest_save')
+        if (raw) return JSON.parse(raw).highScore ?? 0
+      }
+    } catch {}
+    return 0
   }
 
   // -------------------------------------------------------------------------
@@ -459,10 +594,9 @@ export class Game {
   // -------------------------------------------------------------------------
   // Render
   // -------------------------------------------------------------------------
-  render(ctx: CanvasRenderingContext2D, viewW: number, viewH: number): void {
+   render(ctx: CanvasRenderingContext2D, viewW: number, viewH: number): void {
     this.renderBackground(ctx, viewW, viewH)
 
-    // World transform with screen shake.
     ctx.save()
     const s = this.shake
     ctx.translate(
@@ -471,10 +605,14 @@ export class Game {
     )
 
     this.renderTerrain(ctx)
+    this.renderMovingPlatforms(ctx)
     this.renderCheckpoints(ctx)
     this.renderCoins(ctx)
+    this.renderBouncePads(ctx)
     this.renderSpikes(ctx)
     this.renderMovers(ctx)
+    this.renderWindZones(ctx)
+    this.renderPowerUps(ctx)
     this.renderFlag(ctx)
     if (this.mode === 'menu') this.renderMenuPlayer(ctx)
     else this.renderPlayer(ctx)
@@ -681,6 +819,182 @@ export class Game {
 
       ctx.fillStyle = PALETTE.platEdge
       ctx.fillRect(x + r, y + h - 2, w - r * 2, 2)
+
+      ctx.restore()
+    }
+  }
+
+  private renderMovingPlatforms(ctx: CanvasRenderingContext2D): void {
+    for (const mp of this.movingPlatforms) {
+      ctx.save()
+      const x = mp.x
+      const y = mp.y
+      const w = mp.w
+      const h = mp.h
+      const r = Math.min(8, w / 2, h / 2)
+
+      const bodyGrad = ctx.createLinearGradient(0, y, 0, y + h)
+      bodyGrad.addColorStop(0, '#7ec8e3')
+      bodyGrad.addColorStop(1, '#4a90b8')
+      ctx.fillStyle = bodyGrad
+      ctx.beginPath()
+      ctx.moveTo(x + r, y)
+      ctx.lineTo(x + w - r, y)
+      ctx.quadraticCurveTo(x + w, y, x + w, y + r)
+      ctx.lineTo(x + w, y + h)
+      ctx.lineTo(x, y + h)
+      ctx.lineTo(x, y + r)
+      ctx.quadraticCurveTo(x, y, x + r, y)
+      ctx.closePath()
+      ctx.fill()
+
+      ctx.shadowColor = 'rgba(0,0,0,0.22)'
+      ctx.shadowBlur = 10
+      ctx.shadowOffsetY = 5
+      ctx.fill()
+      ctx.shadowColor = 'transparent'
+      ctx.shadowBlur = 0
+      ctx.shadowOffsetY = 0
+
+      ctx.fillStyle = '#fff8e7'
+      ctx.beginPath()
+      ctx.moveTo(x + r, y)
+      ctx.lineTo(x + w - r, y)
+      ctx.quadraticCurveTo(x + w, y, x + w, y + r)
+      ctx.lineTo(x + w - r, y + 6)
+      ctx.quadraticCurveTo(x + w / 2, y + 9, x + r, y + 6)
+      ctx.lineTo(x, y + r)
+      ctx.quadraticCurveTo(x, y, x + r, y)
+      ctx.closePath()
+      ctx.fill()
+
+      ctx.fillStyle = 'rgba(255,255,255,0.3)'
+      ctx.fillRect(x + 4, y + h - 4, w - 8, 3)
+
+      ctx.restore()
+    }
+  }
+
+  private renderBouncePads(ctx: CanvasRenderingContext2D): void {
+    for (const bp of this.bouncePads) {
+      ctx.save()
+      const x = bp.x
+      const y = bp.y
+      const w = bp.w
+      const h = bp.h
+
+      ctx.fillStyle = '#4dd2a0'
+      ctx.beginPath()
+      ctx.moveTo(x + 8, y)
+      ctx.lineTo(x + w - 8, y)
+      ctx.quadraticCurveTo(x + w, y, x + w, y + 8)
+      ctx.lineTo(x + w, y + h)
+      ctx.lineTo(x, y + h)
+      ctx.lineTo(x, y + 8)
+      ctx.quadraticCurveTo(x, y, x + 8, y)
+      ctx.closePath()
+      ctx.fill()
+
+      ctx.fillStyle = '#fff8e7'
+      ctx.beginPath()
+      ctx.moveTo(x + 12, y + 2)
+      ctx.lineTo(x + w - 12, y + 2)
+      ctx.quadraticCurveTo(x + w - 4, y + 2, x + w - 4, y + 8)
+      ctx.lineTo(x + 4, y + 8)
+      ctx.quadraticCurveTo(x + 4, y + 2, x + 12, y + 2)
+      ctx.closePath()
+      ctx.fill()
+
+      ctx.fillStyle = '#2a9d6e'
+      for (let i = 0; i < 3; i++) {
+        ctx.beginPath()
+        ctx.moveTo(x + 16 + i * 20, y + h - 4)
+        ctx.lineTo(x + 24 + i * 20, y + h - 12)
+        ctx.lineTo(x + 32 + i * 20, y + h - 4)
+        ctx.closePath()
+        ctx.fill()
+      }
+
+      ctx.restore()
+    }
+  }
+
+  private renderWindZones(ctx: CanvasRenderingContext2D): void {
+    for (const z of this.windZones) {
+      ctx.save()
+      ctx.globalAlpha = 0.18
+      ctx.fillStyle = '#5f8bff'
+      ctx.fillRect(z.x, z.y, z.w, z.h)
+
+      ctx.strokeStyle = 'rgba(255,255,255,0.35)'
+      ctx.lineWidth = 1.2
+      for (let i = 0; i < 5; i++) {
+        const lx = z.x + 8 + i * 28
+        ctx.beginPath()
+        ctx.moveTo(lx, z.y + 6)
+        ctx.lineTo(lx + 14, z.y + z.h / 2)
+        ctx.lineTo(lx, z.y + z.h - 6)
+        ctx.stroke()
+      }
+
+      for (let i = 0; i < 6; i++) {
+        const px = z.x + ((this.time * 40 + i * 37) % z.w)
+        const py = z.y + ((i * 43) % z.h)
+        ctx.fillStyle = 'rgba(255,255,255,0.5)'
+        ctx.beginPath()
+        ctx.arc(px, py, 1.2, 0, Math.PI * 2)
+        ctx.fill()
+      }
+
+      ctx.restore()
+    }
+  }
+
+  private renderPowerUps(ctx: CanvasRenderingContext2D): void {
+    for (const pu of this.powerUps) {
+      if (pu.collected) continue
+      ctx.save()
+      const bob = Math.sin(this.time * 3 + pu.x) * 3
+      const pulse = 0.35 + 0.25 * Math.sin(this.time * 4 + pu.x)
+      const glow = ctx.createRadialGradient(pu.x, pu.y + bob, 2, pu.x, pu.y + bob, 22)
+      glow.addColorStop(0, `rgba(95,139,255,${pulse})`)
+      glow.addColorStop(1, 'rgba(95,139,255,0)')
+      ctx.fillStyle = glow
+      ctx.fillRect(pu.x - 22, pu.y + bob - 22, 44, 44)
+
+      ctx.translate(pu.x, pu.y + bob)
+      ctx.scale(0.7, 0.7)
+
+      const colors: Record<PowerUpType, { main: string; light: string; dark: string }> = {
+        doubleJump: { main: '#5f8bff', light: '#8aabff', dark: '#3a5fc7' },
+        speedBoost: { main: '#ff6b6b', light: '#ff8e8e', dark: '#c73e3e' },
+        magnet: { main: '#e879f9', light: '#f0a0ff', dark: '#b34db5' },
+        shield: { main: '#4dd2a0', light: '#7ae8c4', dark: '#2a9d6e' },
+      }
+      const c = colors[pu.type]
+      const g = ctx.createLinearGradient(0, -pu.r, 0, pu.r)
+      g.addColorStop(0, c.light)
+      g.addColorStop(0.5, c.main)
+      g.addColorStop(1, c.dark)
+      ctx.fillStyle = g
+      ctx.beginPath()
+      ctx.arc(0, 0, pu.r, 0, Math.PI * 2)
+      ctx.fill()
+      ctx.strokeStyle = 'rgba(255,255,255,0.5)'
+      ctx.lineWidth = 1.5
+      ctx.stroke()
+
+      ctx.fillStyle = '#fff'
+      ctx.font = 'bold 10px Nunito, sans-serif'
+      ctx.textAlign = 'center'
+      ctx.textBaseline = 'middle'
+      const labels: Record<PowerUpType, string> = {
+        doubleJump: '2X',
+        speedBoost: '>>',
+        magnet: '<3',
+        shield: 'O',
+      }
+      ctx.fillText(labels[pu.type], 0, 0)
 
       ctx.restore()
     }
