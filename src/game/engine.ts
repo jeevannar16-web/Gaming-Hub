@@ -62,7 +62,46 @@ interface Cloud {
   alpha: number
 }
 
-const CONFETTI = ['#f2b233', '#ff6b6b', '#4dd2a0', '#5f8bff', '#e879f9', '#ffd166']
+const CONFETTI = ['#f2b233', '#ff6b6b', '#4dd2a0', '#5f8bff', '#e879f9', '#ffd166', '#ffe5b4', '#ffb6c1']
+
+const PALETTE = {
+  skyTop: '#6bb5ff',
+  skyMid: '#a8d8ff',
+  skyHorizon: '#ffecd2',
+  sun: '#fff5e6',
+  sunGlow: 'rgba(255,235,200,0.55)',
+  mountainFar: '#b8d4e8',
+  mountainFarShadow: '#a0c4d8',
+  skyline: '#8ec5e8',
+  skylineWindow: 'rgba(255,250,240,0.65)',
+  hillNear: '#5bb5df',
+  hillNearShadow: '#4aa3cc',
+  cloud: 'rgba(255,255,255,0.85)',
+  mote: 'rgba(255,214,120,',
+  platTop: '#fff8e7',
+  platBodyTop: '#5bb5df',
+  platBodyBot: '#3a7ca5',
+  platHighlight: 'rgba(255,255,255,0.35)',
+  platShadow: 'rgba(0,0,0,0.12)',
+  platBevel: 'rgba(255,255,255,0.25)',
+  platEdge: 'rgba(0,0,0,0.08)',
+  playerBody: '#1b2838',
+  playerBodyLight: '#2c3e50',
+  playerGold: '#f2b233',
+  playerWhite: '#ffffff',
+  playerBlush: 'rgba(255,182,193,0.55)',
+  playerSkin: '#ffe5c0',
+  spikeBody: '#e74c3c',
+  spikeLight: '#ff6b6b',
+  spikeStripe: '#ffffff',
+  spikeGlow: 'rgba(231,76,60,0.25)',
+  moverBody: '#c03a4e',
+  moverAccent: '#f2b233',
+  flagBannerTop: '#f2b233',
+  flagBannerBot: '#c87f1e',
+  vignetteInner: 'rgba(20,10,30,0)',
+  vignetteOuter: 'rgba(20,10,30,0.35)',
+} as const
 
 function clamp(v: number, min: number, max: number): number {
   return Math.max(min, Math.min(max, v))
@@ -447,71 +486,61 @@ export class Game {
 
   // --- Background ----------------------------------------------------------
   private renderBackground(ctx: CanvasRenderingContext2D, viewW: number, viewH: number): void {
-    // Dusk sky: deep indigo at top, violet, warm coral at the horizon.
-    const sky = ctx.createLinearGradient(0, 0, 0, 460)
-    sky.addColorStop(0, '#141433')
-    sky.addColorStop(0.42, '#3b2f63')
-    sky.addColorStop(0.75, '#7a4a6b')
-    sky.addColorStop(1, '#d96a5a')
+    const sky = ctx.createLinearGradient(0, 0, 0, viewH)
+    sky.addColorStop(0, PALETTE.skyTop)
+    sky.addColorStop(0.45, PALETTE.skyMid)
+    sky.addColorStop(1, PALETTE.skyHorizon)
     ctx.fillStyle = sky
     ctx.fillRect(0, 0, viewW, viewH)
 
-    // Sun glow near the horizon.
     const sx = viewW * 0.72
-    const sy = 330
-    const glow = ctx.createRadialGradient(sx, sy, 8, sx, sy, 170)
-    glow.addColorStop(0, 'rgba(255,190,140,0.85)')
-    glow.addColorStop(0.35, 'rgba(255,150,110,0.35)')
-    glow.addColorStop(1, 'rgba(255,150,110,0)')
+    const sy = viewH * 0.62
+    const glow = ctx.createRadialGradient(sx, sy, 6, sx, sy, viewH * 0.35)
+    glow.addColorStop(0, PALETTE.sunGlow)
+    glow.addColorStop(1, 'rgba(255,235,200,0)')
     ctx.fillStyle = glow
-    ctx.fillRect(sx - 190, sy - 190, 380, 380)
-    ctx.fillStyle = 'rgba(255,215,180,0.95)'
+    ctx.fillRect(0, 0, viewW, viewH)
+    ctx.fillStyle = PALETTE.sun
     ctx.beginPath()
-    ctx.arc(sx, sy, 34, 0, Math.PI * 2)
+    ctx.arc(sx, sy, 28, 0, Math.PI * 2)
     ctx.fill()
 
-    // Far mountains (triangles), parallax 0.1.
     const mh = this.camera.x * 0.1
-    this.drawMountains(ctx, viewW, 396, '#1d1b40', mh, 460, [190, 120, 260, 170, 300, 140, 240, 200, 110, 260, 180, 220])
+    this.drawMountains(ctx, viewW, viewH * 0.72, PALETTE.mountainFar, mh, 520, [90, 140, 110, 170, 130, 200, 100, 150])
 
-    // Mid skyline (buildings), parallax 0.3.
     const skylineX = -((this.camera.x * 0.3) % 700)
-    this.drawSkyline(ctx, viewW, 440, '#241f4d', skylineX, 700, 24)
+    this.drawSkyline(ctx, viewW, viewH * 0.78, PALETTE.skyline, skylineX, 700, 28)
 
-    // Soft fog between layers.
-    const fog = ctx.createLinearGradient(0, 250, 0, 450)
-    fog.addColorStop(0, 'rgba(217,106,90,0)')
-    fog.addColorStop(1, 'rgba(217,106,90,0.28)')
+    const fog = ctx.createLinearGradient(0, viewH * 0.55, 0, viewH * 0.85)
+    fog.addColorStop(0, 'rgba(255,236,210,0)')
+    fog.addColorStop(1, 'rgba(255,236,210,0.35)')
     ctx.fillStyle = fog
-    ctx.fillRect(0, 250, viewW, 200)
+    ctx.fillRect(0, viewH * 0.55, viewW, viewH * 0.3)
 
-    // Clouds drifting, parallax 0.15.
     for (const c of this.clouds) {
       const span = viewW + 400
       const cx = (((c.x - this.camera.x * 0.15 + this.time * c.speed) % span) + span) % span - 200
-      const g = ctx.createRadialGradient(cx, c.y, c.r * 0.1, cx, c.y, c.r)
-      g.addColorStop(0, `rgba(255,190,170,${c.alpha})`)
-      g.addColorStop(1, 'rgba(255,190,170,0)')
+      const g = ctx.createRadialGradient(cx, c.y, c.r * 0.08, cx, c.y, c.r)
+      g.addColorStop(0, `rgba(255,255,255,${c.alpha * 1.4})`)
+      g.addColorStop(1, 'rgba(255,255,255,0)')
       ctx.fillStyle = g
       ctx.beginPath()
       ctx.arc(cx, c.y, c.r, 0, Math.PI * 2)
       ctx.fill()
     }
 
-    // Near rolling hills, parallax 0.55.
     const nearX = -((this.camera.x * 0.55) % 800)
-    this.drawHills(ctx, viewW, 470, '#16163a', nearX, 800, 40, 70)
+    this.drawHills(ctx, viewW, viewH * 0.82, PALETTE.hillNear, nearX, 800, 50, 90)
 
-    // Ambient drifting motes.
     ctx.save()
-    for (let i = 0; i < 40; i++) {
+    for (let i = 0; i < 35; i++) {
       const px = ((i * 137) % viewW) + viewW * Math.floor((this.camera.x * 0.25) / viewW) - (this.camera.x * 0.25) % viewW
       const x = ((px % viewW) + viewW) % viewW
-      const y = 60 + ((i * 53) % 300)
-      const a = 0.15 + 0.25 * (0.5 + 0.5 * Math.sin(this.time * 1.6 + i))
-      ctx.fillStyle = `rgba(255,214,120,${a})`
+      const y = 40 + ((i * 53) % (viewH * 0.5))
+      const a = 0.25 + 0.35 * (0.5 + 0.5 * Math.sin(this.time * 1.6 + i))
+      ctx.fillStyle = `rgba(255,240,200,${a})`
       ctx.beginPath()
-      ctx.arc(x, y, i % 2 === 0 ? 1.6 : 1, 0, Math.PI * 2)
+      ctx.arc(x, y, 1.8, 0, Math.PI * 2)
       ctx.fill()
     }
     ctx.restore()
@@ -533,11 +562,11 @@ export class Game {
     for (let x = start; x < span; x += patternW) {
       peaks.forEach((h, i) => {
         const cx = x + (i / peaks.length) * patternW
-        const w = patternW / peaks.length + 30
+        const w = patternW / peaks.length + 20
         ctx.beginPath()
         ctx.moveTo(cx - w, baseY)
-        ctx.lineTo(cx, baseY - h)
-        ctx.lineTo(cx + w, baseY)
+        ctx.quadraticCurveTo(cx - w * 0.3, baseY - h * 0.7, cx, baseY - h)
+        ctx.quadraticCurveTo(cx + w * 0.3, baseY - h * 0.7, cx + w, baseY)
         ctx.closePath()
         ctx.fill()
       })
@@ -548,17 +577,24 @@ export class Game {
     if (maxH <= 0 || patternW <= 0) return
     ctx.fillStyle = color
     const heights = [maxH * 0.7, maxH, maxH * 0.5, maxH * 0.85, maxH * 0.6, maxH * 0.95]
-    const widths = [70, 50, 90, 60, 80, 55]
+    const widths = [55, 40, 70, 48, 62, 44]
     const span = viewW + patternW * 2
     const start = -patternW - ((offset % patternW) + patternW) % patternW
     for (let x = start; x < span; x += patternW) {
       heights.forEach((h, i) => {
         const bx = x + i * (patternW / 6)
-        ctx.fillRect(bx, baseY - h, widths[i], h)
+        const bw = widths[i]
+        ctx.beginPath()
+        ctx.moveTo(bx, baseY)
+        ctx.lineTo(bx, baseY - h + 8)
+        ctx.quadraticCurveTo(bx + bw / 2, baseY - h - 4, bx + bw, baseY - h + 8)
+        ctx.lineTo(bx + bw, baseY)
+        ctx.closePath()
+        ctx.fill()
         if (i % 2 === 0) {
-          ctx.fillStyle = 'rgba(255,209,102,0.55)'
-          ctx.fillRect(bx + 12, baseY - h + 14, 4, 6)
-          ctx.fillRect(bx + 28, baseY - h + 30, 4, 6)
+          ctx.fillStyle = PALETTE.skylineWindow
+          ctx.fillRect(bx + bw * 0.2, baseY - h + 16, 4, 5)
+          ctx.fillRect(bx + bw * 0.55, baseY - h + 24, 4, 5)
           ctx.fillStyle = color
         }
       })
@@ -572,9 +608,9 @@ export class Game {
     const start = -patternW - ((offset % patternW) + patternW) % patternW
     for (let x = start; x < span; x += patternW) {
       ctx.beginPath()
-      ctx.moveTo(x, baseY + 40)
-      ctx.quadraticCurveTo(x + len / 2, baseY - amp, x + len, baseY + 20)
-      ctx.quadraticCurveTo(x + patternW - len / 2, baseY - amp * 0.5, x + patternW, baseY + 40)
+      ctx.moveTo(x, baseY + 30)
+      ctx.quadraticCurveTo(x + len * 0.5, baseY - amp, x + len, baseY + 20)
+      ctx.quadraticCurveTo(x + patternW - len * 0.3, baseY - amp * 0.6, x + patternW, baseY + 30)
       ctx.closePath()
       ctx.fill()
     }
@@ -582,53 +618,71 @@ export class Game {
 
   // --- World ---------------------------------------------------------------
   private renderTerrain(ctx: CanvasRenderingContext2D): void {
-    const tones = [
-      ['#3d4590', '#2a2f5a'],
-      ['#4a529e', '#363d80'],
-      ['#3d4590', '#2a2f5a'],
-    ]
     for (const p of this.level.platforms) {
-      const t = tones[p.variant % 3]
-      const grad = ctx.createLinearGradient(0, p.y, 0, p.y + Math.min(p.h, 90))
-      grad.addColorStop(0, t[0])
-      grad.addColorStop(1, t[1])
-      ctx.fillStyle = grad
+      const x = p.x
+      const y = p.y
+      const w = p.w
+      const h = p.h
+      const r = Math.min(10, w / 2, h / 2)
+
+      ctx.save()
+
+      const bodyGrad = ctx.createLinearGradient(0, y, 0, y + h)
+      bodyGrad.addColorStop(0, PALETTE.platBodyTop)
+      bodyGrad.addColorStop(1, PALETTE.platBodyBot)
+      ctx.fillStyle = bodyGrad
+
       ctx.beginPath()
-      ctx.moveTo(p.x + 8, p.y)
-      ctx.lineTo(p.x + p.w - 8, p.y)
-      ctx.lineTo(p.x + p.w, p.y + 10)
-      ctx.lineTo(p.x + p.w, p.y + p.h)
-      ctx.lineTo(p.x, p.y + p.h)
-      ctx.lineTo(p.x, p.y + 10)
+      ctx.moveTo(x + r, y)
+      ctx.lineTo(x + w - r, y)
+      ctx.quadraticCurveTo(x + w, y, x + w, y + r)
+      ctx.lineTo(x + w, y + h)
+      ctx.lineTo(x, y + h)
+      ctx.lineTo(x, y + r)
+      ctx.quadraticCurveTo(x, y, x + r, y)
       ctx.closePath()
       ctx.fill()
 
-      // Rim darkening on platform edges for silhouette clarity.
-      ctx.fillStyle = 'rgba(0,0,0,0.34)'
-      ctx.fillRect(p.x, p.y + 10, 3, p.h - 10)
-      ctx.fillRect(p.x + p.w - 3, p.y + 10, 3, p.h - 10)
+      ctx.shadowColor = 'rgba(0,0,0,0.18)'
+      ctx.shadowBlur = 8
+      ctx.shadowOffsetX = 0
+      ctx.shadowOffsetY = 4
+      ctx.fill()
+      ctx.shadowColor = 'transparent'
+      ctx.shadowBlur = 0
+      ctx.shadowOffsetY = 0
 
-      // Bright gold highlight strip on top walkable edge (high contrast).
-      ctx.fillStyle = '#f2b233'
-      ctx.fillRect(p.x + 8, p.y, p.w - 16, 4)
-      // Soft inner glow under the edge.
-      ctx.fillStyle = 'rgba(242,178,51,0.45)'
-      ctx.fillRect(p.x + 8, p.y + 4, p.w - 16, 5)
-      // Low-poly notch facets on the sides.
-      ctx.fillStyle = 'rgba(0,0,0,0.16)'
+      ctx.fillStyle = PALETTE.platTop
       ctx.beginPath()
-      ctx.moveTo(p.x, p.y + 10)
-      ctx.lineTo(p.x + 14, p.y + 10)
-      ctx.lineTo(p.x + 14, p.y + 34)
+      ctx.moveTo(x + r, y)
+      ctx.lineTo(x + w - r, y)
+      ctx.quadraticCurveTo(x + w, y, x + w, y + r)
+      ctx.lineTo(x + w - r, y + 6)
+      ctx.quadraticCurveTo(x + w / 2, y + 10, x + r, y + 6)
+      ctx.lineTo(x, y + r)
+      ctx.quadraticCurveTo(x, y, x + r, y)
       ctx.closePath()
       ctx.fill()
-      // Sparse texture dots.
-      ctx.fillStyle = 'rgba(0,0,0,0.14)'
-      for (let k = 0; k < 3; k++) {
-        const nx = p.x + 18 + ((p.seed * 37 + k * 53) % Math.max(10, p.w - 50))
-        const ny = p.y + 16 + ((p.seed * 11 + k * 29) % Math.min(50, Math.max(8, p.h - 10)))
-        ctx.fillRect(nx, ny, 6, 3)
-      }
+
+      ctx.fillStyle = PALETTE.platHighlight
+      ctx.beginPath()
+      ctx.moveTo(x + r + 4, y + 1)
+      ctx.lineTo(x + w - r - 4, y + 1)
+      ctx.quadraticCurveTo(x + w - 2, y + 1, x + w - 2, y + r)
+      ctx.lineTo(x + w - r - 2, y + 5)
+      ctx.quadraticCurveTo(x + w / 2, y + 8, x + r + 2, y + 5)
+      ctx.lineTo(x + 2, y + r)
+      ctx.quadraticCurveTo(x + 2, y + 1, x + r + 4, y + 1)
+      ctx.closePath()
+      ctx.fill()
+
+      ctx.fillStyle = PALETTE.platBevel
+      ctx.fillRect(x + 2, y + h - 4, w - 4, 3)
+
+      ctx.fillStyle = PALETTE.platEdge
+      ctx.fillRect(x + r, y + h - 2, w - r * 2, 2)
+
+      ctx.restore()
     }
   }
 
@@ -729,27 +783,48 @@ export class Game {
   private renderSpikes(ctx: CanvasRenderingContext2D): void {
     for (const s of this.level.spikes) {
       if (s.w <= 0 || s.h <= 0) continue
-      const step = 20
+      const step = 18
       for (let x = s.x; x < s.x + s.w - 2; x += step) {
         const baseW = Math.min(step, s.x + s.w - x)
         ctx.save()
-        const g = ctx.createLinearGradient(x, s.y + s.h, x, s.y - 8)
-        g.addColorStop(0, '#5c1a2e')
-        g.addColorStop(1, '#8f2f48')
+        const glow = ctx.createRadialGradient(x + baseW / 2, s.y + s.h, 2, x + baseW / 2, s.y + s.h, baseW)
+        glow.addColorStop(0, PALETTE.spikeGlow)
+        glow.addColorStop(1, 'rgba(231,76,60,0)')
+        ctx.fillStyle = glow
+        ctx.fillRect(x + baseW / 2 - baseW, s.y, baseW * 2, s.h)
+
+        const g = ctx.createLinearGradient(x, s.y + s.h, x, s.y - 6)
+        g.addColorStop(0, PALETTE.spikeBody)
+        g.addColorStop(1, PALETTE.spikeLight)
         ctx.fillStyle = g
         ctx.beginPath()
         ctx.moveTo(x, s.y + s.h)
-        ctx.lineTo(x + baseW / 2, s.y - 8)
+        ctx.lineTo(x + baseW / 2, s.y - 6)
         ctx.lineTo(x + baseW, s.y + s.h)
         ctx.closePath()
         ctx.fill()
-        // Gold glint on the leading edge.
-        ctx.strokeStyle = 'rgba(242,178,51,0.55)'
-        ctx.lineWidth = 1.2
+
+        ctx.fillStyle = PALETTE.spikeStripe
+        ctx.globalAlpha = 0.35
+        for (let i = -2; i < 4; i++) {
+          const stripeX = x + (baseW / 6) * i
+          ctx.beginPath()
+          ctx.moveTo(stripeX, s.y + s.h)
+          ctx.lineTo(stripeX + baseW * 0.28, s.y - 4)
+          ctx.lineTo(stripeX + baseW * 0.18, s.y - 4)
+          ctx.lineTo(stripeX - baseW * 0.1, s.y + s.h)
+          ctx.closePath()
+          ctx.fill()
+        }
+        ctx.globalAlpha = 1
+
+        ctx.strokeStyle = 'rgba(255,255,255,0.25)'
+        ctx.lineWidth = 1
         ctx.beginPath()
         ctx.moveTo(x, s.y + s.h)
-        ctx.lineTo(x + baseW / 2, s.y - 8)
+        ctx.lineTo(x + baseW / 2, s.y - 6)
         ctx.stroke()
+
         ctx.restore()
       }
     }
@@ -761,17 +836,16 @@ export class Game {
       ctx.save()
       ctx.translate(m.x, m.y + Math.sin(this.time * 2.5 + m.seed) * 2)
 
-      // Danger aura.
       const aura = ctx.createRadialGradient(0, 0, 2, 0, 0, m.r * 2)
-      aura.addColorStop(0, 'rgba(242,90,110,0.28)')
-      aura.addColorStop(1, 'rgba(242,90,110,0)')
+      aura.addColorStop(0, 'rgba(231,76,60,0.22)')
+      aura.addColorStop(1, 'rgba(231,76,60,0)')
       ctx.fillStyle = aura
       ctx.beginPath()
       ctx.arc(0, 0, m.r * 2, 0, Math.PI * 2)
       ctx.fill()
 
       ctx.rotate(m.rot)
-      ctx.fillStyle = '#c03a4e'
+      ctx.fillStyle = PALETTE.moverBody
       for (let k = 0; k < 6; k++) {
         ctx.save()
         ctx.rotate((k * Math.PI) / 3)
@@ -781,7 +855,7 @@ export class Game {
         ctx.lineTo(m.r * 1.45, 6)
         ctx.closePath()
         ctx.fill()
-        ctx.strokeStyle = 'rgba(242,178,51,0.7)'
+        ctx.strokeStyle = 'rgba(242,178,51,0.6)'
         ctx.lineWidth = 1
         ctx.beginPath()
         ctx.moveTo(-5, 0)
@@ -789,11 +863,11 @@ export class Game {
         ctx.stroke()
         ctx.restore()
       }
-      ctx.fillStyle = '#7e2233'
+      ctx.fillStyle = '#c03a4e'
       ctx.beginPath()
       ctx.arc(0, 0, m.r * 0.45, 0, Math.PI * 2)
       ctx.fill()
-      ctx.fillStyle = '#f2b233'
+      ctx.fillStyle = PALETTE.moverAccent
       ctx.beginPath()
       ctx.arc(0, 0, m.r * 0.18, 0, Math.PI * 2)
       ctx.fill()
@@ -832,8 +906,8 @@ export class Game {
     }
     ctx.closePath()
     const g = ctx.createLinearGradient(0, by, 0, by + bannerH)
-    g.addColorStop(0, '#f2b233')
-    g.addColorStop(1, '#c87f1e')
+    g.addColorStop(0, PALETTE.flagBannerTop)
+    g.addColorStop(1, PALETTE.flagBannerBot)
     ctx.fillStyle = g
     ctx.fill()
     // Gold seal.
@@ -875,123 +949,110 @@ export class Game {
     const w = p.w
     const h = p.h
 
-    // Running streak ghosts (unchanged)
     if (p.runTrail > 0) {
       for (let i = 1; i <= 3; i++) {
-        ctx.globalAlpha = 0.16 * (1 - i / 4) * p.runTrail
-        ctx.fillStyle = '#4a3f7a'
+        ctx.globalAlpha = 0.12 * (1 - i / 4) * p.runTrail
+        ctx.fillStyle = PALETTE.playerBody
         rr(ctx, -w / 2 - i * 8 - 4, -h + 2, w, h - 8, 7)
         ctx.fill()
       }
       ctx.globalAlpha = 1
     }
 
-    // Rim lighting on character outline for better contrast
-    ctx.save()
-    ctx.fillStyle = 'rgba(255,255,255,0.15)'
+    const bodyGrad = ctx.createLinearGradient(0, -h, 0, 0)
+    bodyGrad.addColorStop(0, PALETTE.playerBodyLight)
+    bodyGrad.addColorStop(1, PALETTE.playerBody)
+    ctx.fillStyle = bodyGrad
     ctx.beginPath()
     ctx.moveTo(-w / 2, 0)
+    ctx.lineTo(-w / 2, -h * 0.32)
+    ctx.quadraticCurveTo(-w / 2 - 3, -h * 0.52, -w / 2 + 6, -h * 0.68)
+    ctx.quadraticCurveTo(-w / 2 + 10, -h * 0.82, -w / 2 + 14, -h)
+    ctx.quadraticCurveTo(0, -h - 5, w / 2 - 14, -h)
+    ctx.quadraticCurveTo(w / 2 - 10, -h * 0.82, w / 2 - 6, -h * 0.68)
+    ctx.quadraticCurveTo(w / 2 + 3, -h * 0.52, w / 2, -h * 0.32)
     ctx.lineTo(w / 2, 0)
-    ctx.lineTo(w / 2, -h)
-    ctx.lineTo(-w / 2, -h)
     ctx.closePath()
     ctx.fill()
-    ctx.restore()
-
-    // Robe body (rounded, slightly flared) - with visible rim outline
-    const grad = ctx.createLinearGradient(0, -h, 0, 0)
-    grad.addColorStop(0, '#3443a3')
-    grad.addColorStop(1, '#222c6b')
-    ctx.fillStyle = grad
-    ctx.beginPath()
-    ctx.moveTo(-w / 2 - 4, 0)
-    ctx.lineTo(-w / 2, -h + 12)
-    ctx.quadraticCurveTo(-w / 2, -h + 3, -w / 2 + 4, -h)
-    ctx.lineTo(w / 2 - 4, -h)
-    ctx.quadraticCurveTo(w / 2, -h + 3, w / 2, -h + 12)
-    ctx.lineTo(w / 2 + 4, 0)
-    ctx.closePath()
-    ctx.fill()
-    // Bright rim/outline for silhouette clarity against terrain.
-    ctx.strokeStyle = 'rgba(242,178,51,0.7)'
-    ctx.lineWidth = 2
-    ctx.stroke()
-    // Hem highlight
-    ctx.fillStyle = 'rgba(255,255,255,0.09)'
-    ctx.fillRect(-w / 2 + 3, -5, w - 6, 3)
-
-    // Face (direction aware through the facing scale)
-    const eyeY = -h * 0.58
-    ctx.fillStyle = '#0c1030'
-    ctx.beginPath()
-    ctx.arc(w * 0.18, eyeY, 2.4, 0, Math.PI * 2)
-    ctx.fill()
-    ctx.beginPath()
-    ctx.arc(w * 0.35, eyeY, 2.4, 0, Math.PI * 2)
-    ctx.fill()
-    ctx.fillStyle = 'rgba(255,255,255,0.9)'
-    ctx.beginPath()
-    ctx.arc(w * 0.18 + 0.8, eyeY - 0.8, 0.9, 0, Math.PI * 2)
-    ctx.fill()
-    ctx.beginPath()
-    ctx.arc(w * 0.35 + 0.8, eyeY - 0.8, 0.9, 0, Math.PI * 2)
-    ctx.fill()
-
-    // Graduation cap - enhanced with shadow and texture
-    const capW = w + 16
-    const capY = -h - 8
-    ctx.save()
-    ctx.shadowColor = 'rgba(0,0,0,0.4)'
-    ctx.shadowBlur = 3
-    ctx.fillStyle = '#1a2350'
-    ctx.fillRect(-capW / 2, capY, capW, 7)
-    ctx.shadowBlur = 0
-    ctx.fillStyle = '#0d1440'
-    ctx.beginPath()
-    ctx.moveTo(-capW / 2, capY + 7)
-    ctx.lineTo(capW / 2, capY + 7)
-    ctx.lineTo(capW / 2 - 3, capY + 15)
-    ctx.lineTo(-capW / 2 + 3, capY + 15)
-    ctx.closePath()
-    ctx.fill()
-    ctx.fillStyle = '#f2b233'
-    ctx.fillRect(-capW / 2, capY, capW, 2.2)
-
-    // Add subtle texture to cap surface
-    ctx.fillStyle = 'rgba(255,255,255,0.08)'
-    ctx.fillRect(-capW / 2 + 8, capY + 2, capW - 16, 3)
-    ctx.restore()
-
-    // Tassel swings with velocity and idle sway - enhanced visibility
-    const sway = clamp(p.vx / MAX_RUN, -1, 1) * 1.1 + Math.sin(this.time * 5 + (p.facing > 0 ? 0 : Math.PI)) * 0.18
-    ctx.strokeStyle = '#f2b233'
+    ctx.strokeStyle = 'rgba(242,178,51,0.45)'
     ctx.lineWidth = 1.6
-    ctx.beginPath()
-    ctx.moveTo(0, capY + 2)
-    const ex = Math.sin(sway) * 13
-    const ey = capY + 15 + Math.abs(Math.sin(sway)) * 4
-    ctx.lineTo(ex, ey)
     ctx.stroke()
-    // Tassel ball with enhanced contrast
-    ctx.shadowColor = 'rgba(0,0,0,0.4)'
-    ctx.shadowBlur = 2
-    ctx.fillStyle = '#ffd166'
+
+    const eyeY = -h * 0.52
+    const eyeX = w * 0.22
+    const eyeR = 3.6
+
+    ctx.fillStyle = PALETTE.playerBody
     ctx.beginPath()
-    ctx.arc(ex, ey + 1, 2.4, 0, Math.PI * 2)
+    ctx.arc(-eyeX, eyeY, eyeR, 0, Math.PI * 2)
     ctx.fill()
-    ctx.shadowBlur = 0
-    ctx.fillStyle = '#e8a31a'
     ctx.beginPath()
-    ctx.arc(ex, ey + 1, 1, 0, Math.PI * 2)
+    ctx.arc(eyeX, eyeY, eyeR, 0, Math.PI * 2)
     ctx.fill()
 
-    // Feet
-    ctx.fillStyle = '#161c47'
+    ctx.fillStyle = PALETTE.playerWhite
     ctx.beginPath()
-    ctx.ellipse(-w / 2 + 5, -1, 5, 3, 0, 0, Math.PI * 2)
+    ctx.arc(-eyeX + 1.3, eyeY - 1.3, 1.25, 0, Math.PI * 2)
     ctx.fill()
     ctx.beginPath()
-    ctx.ellipse(w / 2 - 5, -1, 5, 3, 0, 0, Math.PI * 2)
+    ctx.arc(eyeX + 1.3, eyeY - 1.3, 1.25, 0, Math.PI * 2)
+    ctx.fill()
+
+    ctx.fillStyle = PALETTE.playerBlush
+    ctx.beginPath()
+    ctx.arc(-eyeX - 4, eyeY + 5, 3.2, 0, Math.PI * 2)
+    ctx.fill()
+    ctx.beginPath()
+    ctx.arc(eyeX + 4, eyeY + 5, 3.2, 0, Math.PI * 2)
+    ctx.fill()
+
+    ctx.strokeStyle = PALETTE.playerBody
+    ctx.lineWidth = 1.1
+    ctx.lineCap = 'round'
+    ctx.beginPath()
+    ctx.arc(0, eyeY + 3, 2.8, 0.15 * Math.PI, 0.85 * Math.PI)
+    ctx.stroke()
+
+    const capY = -h - 6
+    ctx.fillStyle = PALETTE.playerBody
+    ctx.beginPath()
+    ctx.moveTo(-w / 2 - 2, capY + 8)
+    ctx.lineTo(-w / 2 - 12, capY - 2)
+    ctx.lineTo(w / 2 + 12, capY - 2)
+    ctx.lineTo(w / 2 + 2, capY + 8)
+    ctx.closePath()
+    ctx.fill()
+    ctx.fillStyle = PALETTE.playerGold
+    ctx.fillRect(-w / 2 - 12, capY + 5, w + 24, 2.5)
+
+    const tasselX = w / 2 + 2
+    const tasselY = capY + 8
+    ctx.strokeStyle = PALETTE.playerGold
+    ctx.lineWidth = 1.3
+    ctx.beginPath()
+    ctx.moveTo(tasselX, tasselY)
+    ctx.lineTo(tasselX + 7, tasselY + 11)
+    ctx.stroke()
+    ctx.fillStyle = PALETTE.playerGold
+    ctx.beginPath()
+    ctx.arc(tasselX + 7, tasselY + 12, 2, 0, Math.PI * 2)
+    ctx.fill()
+
+    ctx.fillStyle = '#e74c3c'
+    ctx.beginPath()
+    ctx.moveTo(-w / 2 - 3, -h * 0.28)
+    ctx.lineTo(-w / 2 - 7, -h * 0.28)
+    ctx.lineTo(-w / 2 - 7, -h * 0.28 + 10)
+    ctx.lineTo(-w / 2 - 3, -h * 0.28 + 10)
+    ctx.closePath()
+    ctx.fill()
+
+    ctx.fillStyle = '#1b2838'
+    ctx.beginPath()
+    ctx.ellipse(-w / 2 + 6, -1, 5, 3, 0, 0, Math.PI * 2)
+    ctx.fill()
+    ctx.beginPath()
+    ctx.ellipse(w / 2 - 6, -1, 5, 3, 0, 0, Math.PI * 2)
     ctx.fill()
 
     ctx.restore()
@@ -1013,8 +1074,8 @@ export class Game {
 
   private renderVignette(ctx: CanvasRenderingContext2D, viewW: number, viewH: number): void {
     const g = ctx.createRadialGradient(viewW / 2, viewH / 2, viewH * 0.45, viewW / 2, viewH / 2, viewH * 0.95)
-    g.addColorStop(0, 'rgba(10,8,30,0)')
-    g.addColorStop(1, 'rgba(10,8,30,0.42)')
+    g.addColorStop(0, PALETTE.vignetteInner)
+    g.addColorStop(1, PALETTE.vignetteOuter)
     ctx.fillStyle = g
     ctx.fillRect(0, 0, viewW, viewH)
   }
