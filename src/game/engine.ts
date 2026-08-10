@@ -133,7 +133,6 @@ function rr(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: n
 
 export class Game {
   mode: GameMode = 'menu'
-  debug = false
   time = 0
   score = 0
   lives = 3
@@ -634,8 +633,6 @@ export class Game {
     else this.renderPlayer(ctx)
     this.renderParticles(ctx)
     ctx.restore()
-
-    if (this.debug) this.renderDebugInfo(ctx)
 
     this.renderVignette(ctx, viewW, viewH)
   }
@@ -1410,33 +1407,5 @@ export class Game {
     g.addColorStop(1, PALETTE.vignetteOuter)
     ctx.fillStyle = g
     ctx.fillRect(0, 0, viewW, viewH)
-  }
-
-  private renderDebugInfo(ctx: CanvasRenderingContext2D): void {
-    ctx.save()
-    ctx.strokeStyle = 'rgba(255,0,0,0.6)'
-    ctx.lineWidth = 1
-
-    for (const p of this.level.platforms) {
-      ctx.strokeRect(p.x, p.y, p.w, p.h)
-    }
-
-    for (const mp of this.movingPlatforms) {
-      ctx.strokeRect(mp.x, mp.y, mp.w, mp.h)
-    }
-
-    for (const z of this.windZones) {
-      ctx.strokeStyle = 'rgba(0,0,255,0.5)'
-      ctx.strokeRect(z.x, z.y, z.w, z.h)
-    }
-
-    const p = this.player
-    ctx.strokeStyle = 'rgba(0,255,0,0.8)'
-    ctx.strokeRect(p.x, p.y, p.w, p.h)
-
-    ctx.fillStyle = '#fff'
-    ctx.font = '12px monospace'
-    ctx.fillText(`x:${p.x.toFixed(1)} y:${p.y.toFixed(1)} vx:${p.vx.toFixed(1)} vy:${p.vy.toFixed(1)}`, 8, 16)
-    ctx.restore()
   }
 }
