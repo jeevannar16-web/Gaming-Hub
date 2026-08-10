@@ -154,7 +154,8 @@ export function createPlayer(x: number, y: number): Player {
 }
 
 export function rectsOverlap(a: Rect, b: Rect): boolean {
-  return a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y
+  const buffer = 1
+  return a.x + buffer < b.x + b.w && a.x + a.w - buffer > b.x && a.y + buffer < b.y + b.h && a.y + a.h - buffer > b.y
 }
 
 export function circleOverlapsRect(cx: number, cy: number, r: number, r2: Rect): boolean {

@@ -54,115 +54,86 @@ function powerUp(x: number, y: number, type: 'doubleJump' | 'speedBoost' | 'magn
 }
 
 export function buildLevel(): LevelData {
-  // -----------------------------------------------------------------------
-  // PLATFORMS — Designed in 7 "phrases" with clear rise/fall rhythm.
-  // Each phrase is a short musical motif: flat → rise → peak → fall/breathe.
-  // -----------------------------------------------------------------------
   const platforms: Platform[] = [
-    // PHRASE 1 — Tutorial approach: easy ground + gentle rise
-    platform(0, GROUND_Y, 1400, 220),
-    platform(1560, GROUND_Y, 1000, 220),
-    platform(2680, GROUND_Y, 1200, 220),
+    platform(0, GROUND_Y, 1200, 200),
+    platform(1200, GROUND_Y, 1200, 200),
+    platform(2480, GROUND_Y, 1200, 200),
 
-    platform(700, 420, 140, 40, 1),
-    platform(920, 380, 140, 40, 2),
-    platform(1140, 340, 140, 40, 1),
+    platform(560, 400, 120, 40, 1),
+    platform(800, 360, 120, 40, 2),
+    platform(1040, 320, 120, 40, 1),
 
-    // PHRASE 2 — First jump challenge: two gaps + rising stairs
-    platform(4000, GROUND_Y, 820, 220),
-    platform(4200, 420, 160, 40, 1),
-    platform(4440, 380, 160, 40, 2),
-    platform(4680, 340, 160, 40, 1),
+    platform(3920, GROUND_Y, 800, 200),
+    platform(4080, 400, 120, 40, 1),
+    platform(4320, 360, 120, 40, 2),
+    platform(4560, 320, 120, 40, 1),
 
-    // PHRASE 3 — Breather: long flat section for recovery
-    platform(5000, GROUND_Y, 1400, 220),
+    platform(5000, GROUND_Y, 1200, 200),
 
-    // PHRASE 4 — Pit crossing: stepping stones over a deep pit
-    platform(6600, 420, 120, 40, 1),
-    platform(6760, 380, 120, 40, 2),
-    platform(6920, 340, 120, 40, 1),
-    platform(7080, 420, 120, 40, 2),
-    platform(7240, 460, 160, 40, 1),
+    platform(6400, 400, 120, 40, 1),
+    platform(6640, 360, 120, 40, 2),
+    platform(6880, 320, 120, 40, 1),
+    platform(7120, 400, 120, 40, 2),
+    platform(7360, 440, 160, 40, 1),
 
-    // PHRASE 5 — Moving obstacle walkway
-    platform(7600, GROUND_Y, 1100, 220),
-    platform(8680, 420, 240, 40, 1),
+    platform(7680, GROUND_Y, 1040, 200),
+    platform(8800, 400, 200, 40, 1),
 
-    // PHRASE 6 — Checkpoint approach: descending stairs
-    platform(9000, 420, 160, 40, 1),
-    platform(9220, 380, 160, 40, 2),
-    platform(9440, 340, 160, 40, 1),
-    platform(9640, GROUND_Y, 720, 220),
+    platform(9120, 400, 160, 40, 1),
+    platform(9360, 360, 160, 40, 2),
+    platform(9600, 320, 160, 40, 1),
+    platform(9840, GROUND_Y, 720, 200),
 
-    // PHRASE 7 — Final challenge: high gauntlet
-    platform(10400, 420, 140, 40, 1),
-    platform(10560, 380, 140, 40, 2),
-    platform(10720, 340, 140, 40, 1),
-    platform(10900, 420, 180, 40, 1),
+    platform(10560, 400, 120, 40, 1),
+    platform(10800, 360, 120, 40, 2),
+    platform(11040, 320, 120, 40, 1),
+    platform(11280, 400, 160, 40, 1),
 
-    platform(11200, GROUND_Y, 2800, 220),
+    platform(11600, GROUND_Y, 2400, 200),
   ]
 
   // -----------------------------------------------------------------------
   // COINS — Placed to visually guide jump paths.
   // -----------------------------------------------------------------------
   const coins: Coin[] = [
-    // Phrase 1: starter flat coins
-    ...coinsLine(180, 420, 5, 240),
-    // Phrase 1: above starter climb
-    ...coinsArc(740, 400, 3, 140, 18),
-    // Phrase 2: gap coins
-    coin(4280, 380, 1),
-    coin(4520, 340, 2),
-    coin(4760, 300, 3),
-    // Phrase 3: breather run
-    ...coinsLine(5100, 420, 7, 140),
-    // Phrase 4: pit stones
-    coin(6680, 380, 1),
-    coin(6840, 340, 2),
-    coin(7000, 380, 1),
-    // Phrase 5: walkway coins
-    ...coinsLine(7800, 380, 5, 140),
-    // Phrase 6: descending stairs coins
-    coin(9080, 380, 1),
-    coin(9300, 340, 2),
-    coin(9520, 300, 3),
-    // Phrase 7: high gauntlet coins
-    coin(10480, 380, 1),
-    coin(10640, 340, 2),
-    coin(10800, 300, 3),
-    // Phrase 7: final flat run
-    ...coinsLine(11300, 420, 14, 160),
+    ...coinsLine(160, 400, 5, 200),
+    ...coinsArc(600, 380, 3, 120, 18),
+    coin(4160, 360, 1),
+    coin(4400, 320, 2),
+    coin(4640, 280, 3),
+    ...coinsLine(5200, 400, 7, 120),
+    coin(6480, 360, 1),
+    coin(6720, 320, 2),
+    coin(6960, 360, 1),
+    ...coinsLine(7880, 360, 5, 120),
+    coin(9200, 360, 1),
+    coin(9440, 320, 2),
+    coin(9680, 280, 3),
+    coin(10640, 360, 1),
+    coin(10880, 320, 2),
+    coin(11120, 280, 3),
+    ...coinsLine(11700, 400, 14, 140),
   ]
 
-  // -----------------------------------------------------------------------
-  // HAZARDS
-  // -----------------------------------------------------------------------
   const spikeList: SpikeStrip[] = [
     spikes(2800, 120),
-    spikes(5800, 120),
-    spikes(10000, 120),
-    spikes(11800, 120),
+    spikes(5600, 120),
+    spikes(9800, 120),
+    spikes(11600, 120),
   ]
 
   const movers: MovingHazard[] = [
-    mover(7960, 398, 22, 7880, 8160, 140, 7),
+    mover(8040, 398, 22, 7960, 8240, 140, 7),
     mover(9000, 398, 22, 8920, 9100, 160, 11),
   ]
 
-  // -----------------------------------------------------------------------
-  // CHECKPOINTS — Placed after major challenge phrases
-  // -----------------------------------------------------------------------
   const checkpoints: Checkpoint[] = [
-    { x: 2750, y: GROUND_Y, active: false },
-    { x: 4980, y: GROUND_Y, active: false },
-    { x: 7300, y: GROUND_Y, active: false },
-    { x: 9620, y: GROUND_Y, active: false },
+    { x: 2560, y: GROUND_Y, active: false },
+    { x: 4960, y: GROUND_Y, active: false },
+    { x: 7440, y: GROUND_Y, active: false },
+    { x: 9840, y: GROUND_Y, active: false },
   ]
 
-  // -----------------------------------------------------------------------
-  // FLAG — End of level
-  // -----------------------------------------------------------------------
   const flag: Flag = {
     x: 13800,
     y: GROUND_Y,
@@ -171,30 +142,30 @@ export function buildLevel(): LevelData {
   }
 
   const movingPlatforms: MovingPlatform[] = [
-    movingPlatform(3400, 340, 120, 28, 'x', 100, 60),
-    movingPlatform(6000, 300, 120, 28, 'y', 80, 55),
-    movingPlatform(8600, 360, 140, 28, 'x', 120, 70),
-    movingPlatform(10200, 280, 120, 28, 'y', 100, 60),
-    movingPlatform(12000, 340, 120, 28, 'x', 140, 75),
+    movingPlatform(3200, 320, 120, 28, 'x', 100, 60),
+    movingPlatform(5600, 280, 120, 28, 'y', 80, 55),
+    movingPlatform(8400, 320, 120, 28, 'x', 120, 70),
+    movingPlatform(10000, 280, 120, 28, 'y', 100, 60),
+    movingPlatform(12000, 320, 120, 28, 'x', 140, 75),
   ]
 
   const bouncePads: BouncePad[] = [
-    bouncePad(4000, GROUND_Y - 18, 80, 18, 1.6),
-    bouncePad(8200, GROUND_Y - 18, 80, 18, 1.7),
+    bouncePad(3920, GROUND_Y - 18, 80, 18, 1.6),
+    bouncePad(7680, GROUND_Y - 18, 80, 18, 1.7),
     bouncePad(9800, GROUND_Y - 18, 80, 18, 1.5),
   ]
 
   const windZones: WindZone[] = [
-    windZone(6800, 200, 280, 220, 280, 1),
-    windZone(9200, 180, 260, 240, -260, -1),
-    windZone(11000, 220, 300, 200, 300, 1),
+    windZone(6400, 200, 280, 220, 280, 1),
+    windZone(8800, 200, 260, 220, -260, -1),
+    windZone(10800, 200, 300, 200, 300, 1),
   ]
 
   const powerUps: PowerUp[] = [
-    powerUp(740, 360, 'doubleJump'),
-    powerUp(4280, 340, 'speedBoost'),
-    powerUp(6680, 340, 'shield'),
-    powerUp(9080, 340, 'magnet'),
+    powerUp(600, 320, 'doubleJump'),
+    powerUp(4160, 320, 'speedBoost'),
+    powerUp(6480, 320, 'shield'),
+    powerUp(9200, 320, 'magnet'),
     powerUp(12000, 300, 'doubleJump'),
   ]
 

@@ -125,9 +125,25 @@ export default function GameCanvas({ gameState, inputRef, callbacks }: GameCanva
       window.removeEventListener('mousedown', onInteraction)
       window.removeEventListener('touchstart', onInteraction)
     }
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.code === 'F3') {
+        const game = gameRef.current
+        if (game) {
+          game.debug = !game.debug
+          console.log('[Debug]', game.debug ? 'ON' : 'OFF')
+        }
+      }
+    }
     window.addEventListener('keydown', onInteraction)
     window.addEventListener('mousedown', onInteraction)
     window.addEventListener('touchstart', onInteraction)
+    window.addEventListener('keydown', onKeyDown)
+    return () => {
+      window.removeEventListener('keydown', onInteraction)
+      window.removeEventListener('mousedown', onInteraction)
+      window.removeEventListener('touchstart', onInteraction)
+      window.removeEventListener('keydown', onKeyDown)
+    }
   }, [])
 
   return <canvas ref={canvasRef} className="game-canvas" />

@@ -133,6 +133,7 @@ function rr(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: n
 
 export class Game {
   mode: GameMode = 'menu'
+  debug = false
   time = 0
   score = 0
   lives = 3
@@ -346,6 +347,7 @@ export class Game {
           p.vy = 0
           p.onGround = true
           if (wasFalling) p.squash = -0.6
+          p.x += (mp.x - mp.startX) * dt
         } else if (p.vy < 0) {
           p.y = mp.y + mp.h
           p.vy = 0
@@ -363,7 +365,11 @@ export class Game {
     const p = this.player
     for (const z of this.windZones) {
       if (rectsOverlap(p, z)) {
-        p.vx += z.force * z.direction * dt
+        const windEffect = z.force * z.direction * dt
+        const nextX = p.x + windEffect
+        if (nextX >= 0 && nextX + p.w <= this.level.width) {
+          p.vx += windEffect
+        }
       }
     }
   }
@@ -372,11 +378,21 @@ export class Game {
     const p = this.player
     for (const bp of this.bouncePads) {
       if (rectsOverlap(p, bp) && p.vy >= 0) {
-        p.vy = JUMP_VEL * bp.strength
-        p.onGround = false
-        p.squash = 0.7
-        haptic(25)
-        this.spawnBurst(bp.x + bp.w / 2, bp.y, '#4dd2a0', 8)
+        const nextY = p.y - JUMP_VEL * bp.strength
+        let blocked = false
+        for (const plat of this.level.platforms) {
+          if (rectsOverlap({ x: p.x, y: nextY, w: p.w, h: p.h }, plat)) {
+            blocked = true
+            break
+          }
+        }
+        if (!blocked) {
+          p.vy = Math.max(p.vy, JUMP_VEL * bp.strength)
+          p.onGround = false
+          p.squash = 0.7
+          haptic(25)
+          this.spawnBurst(bp.x + bp.w / 2, bp.y, '#4dd2a0', 8)
+        }
       }
     }
   }
@@ -618,6 +634,8 @@ export class Game {
     else this.renderPlayer(ctx)
     this.renderParticles(ctx)
     ctx.restore()
+
+    if (this.debug) this.renderDebugInfo(ctx)
 
     this.renderVignette(ctx, viewW, viewH)
   }
@@ -1392,5 +1410,33 @@ export class Game {
     g.addColorStop(1, PALETTE.vignetteOuter)
     ctx.fillStyle = g
     ctx.fillRect(0, 0, viewW, viewH)
+  }
+
+  private renderDebugInfo(ctx: CanvasRenderingContext2D): void {
+    ctx.save()
+    ctx.strokeStyle = 'rgba(255,0,0,0.6)'
+    ctx.lineWidth = 1
+
+    for (const p of this.level.platforms) {
+      ctx.strokeRect(p.x, p.y, p.w, p.h)
+    }
+
+    for (const mp of this.movingPlatforms) {
+      ctx.strokeRect(mp.x, mp.y, mp.w, mp.h)
+    }
+
+    for (const z of this.windZones) {
+      ctx.strokeStyle = 'rgba(0,0,255,0.5)'
+      ctx.strokeRect(z.x, z.y, z.w, z.h)
+    }
+
+    const p = this.player
+    ctx.strokeStyle = 'rgba(0,255,0,0.8)'
+    ctx.strokeRect(p.x, p.y, p.w, p.h)
+
+    ctx.fillStyle = '#fff'
+    ctx.font = '12px monospace'
+    ctx.fillText(`x:${p.x.toFixed(1)} y:${p.y.toFixed(1)} vx:${p.vx.toFixed(1)} vy:${p.vy.toFixed(1)}`, 8, 16)
+    ctx.restore()
   }
 }
