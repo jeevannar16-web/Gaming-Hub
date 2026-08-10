@@ -83,8 +83,7 @@ export default function GameCanvas({ gameState, inputRef, callbacks }: GameCanva
   useEffect(() => {
     const canvas = canvasRef.current
     if (!canvas) return
-    const ctx = canvas.getContext('2d')
-    if (!ctx) return
+    const ctx = canvas.getContext('2d')!
 
     function loop(timestamp: number) {
       const game = gameRef.current
@@ -100,9 +99,8 @@ export default function GameCanvas({ gameState, inputRef, callbacks }: GameCanva
         game.update(dt, input)
       }
 
-      const { dpr } = sizeRef.current
       ctx.save()
-      ctx.scale(dpr, dpr)
+      ctx.scale(sizeRef.current.dpr, sizeRef.current.dpr)
       game.render(ctx, VIEW_W, VIEW_H)
       ctx.restore()
 

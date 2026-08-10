@@ -16,10 +16,12 @@ function App() {
   const [lives, setLives] = useState(3)
 
   const inputRef = useRef<InputState>({ left: false, right: false, jumpHeld: false })
+  const gameStateRef = useRef(gameState)
+  gameStateRef.current = gameState
 
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
-      const state = gameState
+      const state = gameStateRef.current
 
       if (state === 'playing') {
         if (e.code === 'KeyA' || e.code === 'ArrowLeft') {
@@ -32,6 +34,16 @@ function App() {
         }
         if (e.code === 'Space' || e.code === 'ArrowUp' || e.code === 'KeyW') {
           inputRef.current.jumpHeld = true
+          e.preventDefault()
+        }
+        if (e.code === 'Home') {
+          inputRef.current.left = true
+          inputRef.current.right = false
+          e.preventDefault()
+        }
+        if (e.code === 'End') {
+          inputRef.current.right = true
+          inputRef.current.left = false
           e.preventDefault()
         }
       } else {
@@ -47,10 +59,15 @@ function App() {
     }
 
     const onKeyUp = (e: KeyboardEvent) => {
-      if (gameState !== 'playing') return
+      const state = gameStateRef.current
+      if (state !== 'playing') return
       if (e.code === 'KeyA' || e.code === 'ArrowLeft') inputRef.current.left = false
       if (e.code === 'KeyD' || e.code === 'ArrowRight') inputRef.current.right = false
       if (e.code === 'Space' || e.code === 'ArrowUp' || e.code === 'KeyW') inputRef.current.jumpHeld = false
+      if (e.code === 'Home' || e.code === 'End') {
+        inputRef.current.left = false
+        inputRef.current.right = false
+      }
     }
 
     window.addEventListener('keydown', onKeyDown)

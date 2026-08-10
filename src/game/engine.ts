@@ -19,9 +19,7 @@ import {
   rectsOverlap,
   type Coin,
   type LevelData,
-  type MovingHazard,
   type Player,
-  type Platform,
   type Rect,
 } from './entities'
 import { KILL_Y, PLAYER_SPAWN_X } from './level'
@@ -101,7 +99,7 @@ export class Game {
     this.level = level
     this.camera = new Camera(viewW, level.width)
     this.callbacks = callbacks
-    this.player = createPlayer(PLAYER_SPAWN_X, this.groundY() - 34)
+    this.player = createPlayer(PLAYER_SPAWN_X, this.groundY() - 41)
     this.camera.snap(PLAYER_SPAWN_X)
     for (let i = 0; i < 26; i++) {
       this.clouds.push({
@@ -576,8 +574,8 @@ export class Game {
   // --- World ---------------------------------------------------------------
   private renderTerrain(ctx: CanvasRenderingContext2D): void {
     const tones = [
+      ['#2a2f5a', '#1e2240'],
       ['#333a70', '#242a52'],
-      ['#3a4180', '#2a3059'],
       ['#2c3266', '#1f2448'],
     ]
     for (const p of this.level.platforms) {
@@ -596,12 +594,17 @@ export class Game {
       ctx.closePath()
       ctx.fill()
 
-      // Crisp gold highlight edge on top.
-      ctx.fillStyle = 'rgba(242,178,51,0.9)'
-      ctx.fillRect(p.x + 8, p.y, p.w - 16, 2.5)
-      // Subtle light slab under the edge.
-      ctx.fillStyle = 'rgba(255,255,255,0.06)'
-      ctx.fillRect(p.x + 8, p.y + 2.5, p.w - 16, 6)
+      // Rim darkening on platform edges for silhouette clarity.
+      ctx.fillStyle = 'rgba(0,0,0,0.34)'
+      ctx.fillRect(p.x, p.y + 10, 3, p.h - 10)
+      ctx.fillRect(p.x + p.w - 3, p.y + 10, 3, p.h - 10)
+
+      // Bright gold highlight strip on top walkable edge (high contrast).
+      ctx.fillStyle = '#f2b233'
+      ctx.fillRect(p.x + 8, p.y, p.w - 16, 3)
+      // Soft inner glow under the edge.
+      ctx.fillStyle = 'rgba(242,178,51,0.35)'
+      ctx.fillRect(p.x + 8, p.y + 3, p.w - 16, 4)
       // Low-poly notch facets on the sides.
       ctx.fillStyle = 'rgba(0,0,0,0.16)'
       ctx.beginPath()
@@ -663,6 +666,7 @@ export class Game {
       ctx.save()
       ctx.translate(c.x, y)
       ctx.scale(sc, 1)
+
       const g = ctx.createLinearGradient(0, -c.r, 0, c.r)
       g.addColorStop(0, '#ffe08a')
       g.addColorStop(0.5, '#f2b233')
@@ -671,24 +675,44 @@ export class Game {
       ctx.beginPath()
       ctx.arc(0, 0, c.r, 0, Math.PI * 2)
       ctx.fill()
+
+      // Gold rim
       ctx.strokeStyle = '#9a5f14'
-      ctx.lineWidth = 1.5
+      ctx.lineWidth = 2
       ctx.stroke()
-      // Inner tassel mark.
-      ctx.fillStyle = 'rgba(154,95,20,0.85)'
-      ctx.beginPath()
-      ctx.arc(0, 0, 3, 0, Math.PI * 2)
-      ctx.fill()
-      ctx.beginPath()
-      ctx.moveTo(0, 0)
-      ctx.lineTo(0, c.r + 4)
-      ctx.strokeStyle = '#9a5f14'
+
+      // Inner highlight ring
+      ctx.strokeStyle = 'rgba(255,255,255,0.4)'
       ctx.lineWidth = 1
-      ctx.stroke()
-      ctx.fillStyle = '#ffd166'
       ctx.beginPath()
-      ctx.arc(0, c.r + 6, 2, 0, Math.PI * 2)
+      ctx.arc(0, 0, c.r * 0.55, 0, Math.PI * 2)
+      ctx.stroke()
+
+      // Medallion star/ribbon detail (graduation theme)
+      ctx.fillStyle = '#e8a31a'
+      ctx.beginPath()
+      for (let i = 0; i < 5; i++) {
+        const angle = (i * Math.PI * 2) / 5 - Math.PI / 2
+        const outerR = c.r * 0.45
+        const innerR = c.r * 0.18
+        const x = Math.cos(angle) * outerR
+        const y = Math.sin(angle) * outerR
+        if (i === 0) ctx.moveTo(x, y)
+        else ctx.lineTo(x, y)
+        const innerAngle = angle + Math.PI / 5
+        const ix = Math.cos(innerAngle) * innerR
+        const iy = Math.sin(innerAngle) * innerR
+        ctx.lineTo(ix, iy)
+      }
+      ctx.closePath()
       ctx.fill()
+
+      // Center dot
+      ctx.fillStyle = '#c87f1e'
+      ctx.beginPath()
+      ctx.arc(0, 0, c.r * 0.12, 0, Math.PI * 2)
+      ctx.fill()
+
       ctx.restore()
     }
   }
@@ -839,7 +863,7 @@ export class Game {
     const w = p.w
     const h = p.h
 
-    // Running streak ghosts.
+    // Running streak ghosts (unchanged)
     if (p.runTrail > 0) {
       for (let i = 1; i <= 3; i++) {
         ctx.globalAlpha = 0.16 * (1 - i / 4) * p.runTrail
@@ -850,7 +874,19 @@ export class Game {
       ctx.globalAlpha = 1
     }
 
-    // Robe body (rounded, slightly flared).
+    // Rim lighting on character outline for better contrast
+    ctx.save()
+    ctx.fillStyle = 'rgba(255,255,255,0.15)'
+    ctx.beginPath()
+    ctx.moveTo(-w / 2, 0)
+    ctx.lineTo(w / 2, 0)
+    ctx.lineTo(w / 2, -h)
+    ctx.lineTo(-w / 2, -h)
+    ctx.closePath()
+    ctx.fill()
+    ctx.restore()
+
+    // Robe body (rounded, slightly flared) - unchanged
     const grad = ctx.createLinearGradient(0, -h, 0, 0)
     grad.addColorStop(0, '#3443a3')
     grad.addColorStop(1, '#222c6b')
@@ -864,11 +900,11 @@ export class Game {
     ctx.lineTo(w / 2 + 4, 0)
     ctx.closePath()
     ctx.fill()
-    // Hem highlight.
+    // Hem highlight
     ctx.fillStyle = 'rgba(255,255,255,0.09)'
     ctx.fillRect(-w / 2 + 3, -5, w - 6, 3)
 
-    // Face (direction aware through the facing scale).
+    // Face (direction aware through the facing scale)
     const eyeY = -h * 0.58
     ctx.fillStyle = '#0c1030'
     ctx.beginPath()
@@ -885,11 +921,15 @@ export class Game {
     ctx.arc(w * 0.35 + 0.8, eyeY - 0.8, 0.9, 0, Math.PI * 2)
     ctx.fill()
 
-    // Graduation cap.
+    // Graduation cap - enhanced with shadow and texture
     const capW = w + 16
     const capY = -h - 8
+    ctx.save()
+    ctx.shadowColor = 'rgba(0,0,0,0.4)'
+    ctx.shadowBlur = 3
     ctx.fillStyle = '#1a2350'
     ctx.fillRect(-capW / 2, capY, capW, 7)
+    ctx.shadowBlur = 0
     ctx.fillStyle = '#0d1440'
     ctx.beginPath()
     ctx.moveTo(-capW / 2, capY + 7)
@@ -901,7 +941,12 @@ export class Game {
     ctx.fillStyle = '#f2b233'
     ctx.fillRect(-capW / 2, capY, capW, 2.2)
 
-    // Tassel swings with velocity and idle sway.
+    // Add subtle texture to cap surface
+    ctx.fillStyle = 'rgba(255,255,255,0.08)'
+    ctx.fillRect(-capW / 2 + 8, capY + 2, capW - 16, 3)
+    ctx.restore()
+
+    // Tassel swings with velocity and idle sway - enhanced visibility
     const sway = clamp(p.vx / MAX_RUN, -1, 1) * 1.1 + Math.sin(this.time * 5 + (p.facing > 0 ? 0 : Math.PI)) * 0.18
     ctx.strokeStyle = '#f2b233'
     ctx.lineWidth = 1.6
@@ -911,12 +956,21 @@ export class Game {
     const ey = capY + 15 + Math.abs(Math.sin(sway)) * 4
     ctx.lineTo(ex, ey)
     ctx.stroke()
+    // Tassel ball with enhanced contrast
+    ctx.shadowColor = 'rgba(0,0,0,0.4)'
+    ctx.shadowBlur = 2
     ctx.fillStyle = '#ffd166'
     ctx.beginPath()
     ctx.arc(ex, ey + 1, 2.4, 0, Math.PI * 2)
     ctx.fill()
+    ctx.shadowBlur = 0
+    ctx.fillStyle = '#e8a31a'
+    ctx.beginPath()
+    ctx.arc(ex, ey + 1, 1, 0, Math.PI * 2)
+    ctx.fill()
+    ctx.restore()
 
-    // Feet.
+    // Feet
     ctx.fillStyle = '#161c47'
     ctx.beginPath()
     ctx.ellipse(-w / 2 + 5, -1, 5, 3, 0, 0, Math.PI * 2)

@@ -109,6 +109,12 @@ html, body, #root {
   height: 22px;
   position: relative;
   filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));
+  transition: opacity 0.2s ease;
+}
+
+.life-icon.lost {
+  opacity: 0.7;
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));
 }
 
 .life-icon svg {
@@ -188,14 +194,15 @@ html, body, #root {
   bottom: 0;
   left: 0;
   right: 0;
-  padding: 16px 20px;
+  padding: 24px;
   pointer-events: none;
   z-index: 15;
-  display: flex;
-  justify-content: space-between;
 }
 
 .touch-dpad {
+  position: absolute;
+  left: 20px;
+  bottom: 24px;
   width: 140px;
   height: 140px;
   pointer-events: auto;
@@ -203,6 +210,9 @@ html, body, #root {
 }
 
 .touch-jump {
+  position: absolute;
+  right: 20px;
+  bottom: 24px;
   width: 100px;
   height: 100px;
   pointer-events: auto;
@@ -244,8 +254,22 @@ html, body, #root {
 .jump-btn { right: 0; top: 50%; transform: translateY(-50%); width: 100px; height: 100px; border-radius: 50%; }
 
 @media (max-width: 480px) {
-  .touch-dpad { width: 120px; height: 120px; }
-  .touch-jump { width: 88px; height: 88px; }
-  .jump-btn { width: 88px; height: 88px; }
-  .dpad-left, .dpad-right { width: 52px; height: 52px; }
+  .touch-dpad { 
+    width: 28vw; 
+    height: 28vw; 
+    left: 5vw;
+  }
+  .touch-jump { 
+    width: 20vw; 
+    height: 20vw; 
+    right: 5vw;
+  }
+  .dpad-left, .dpad-right { 
+    width: 24px; 
+    height: 24px; 
+  }
+  .dpad-center { 
+    width: 16px; 
+    height: 40px; 
+  }
 }
