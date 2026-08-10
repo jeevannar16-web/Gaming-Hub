@@ -112,6 +112,43 @@ html, body, #root {
   transition: opacity 0.2s ease;
 }
 
+.life-icon svg {
+  width: 100%;
+  height: 100%;
+}
+
+.life-icon .cap-shape {
+  fill: #ffd166;
+  stroke: #b8860b;
+}
+
+.life-icon .tassel-line {
+  stroke: #f2b233;
+}
+
+.life-icon .tassel-dot {
+  fill: #ffd166;
+}
+
+.life-icon.lost {
+  opacity: 1;
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));
+}
+
+.life-icon.lost .cap-shape {
+  fill: none;
+  stroke: #666;
+}
+
+.life-icon.lost .tassel-line {
+  stroke: #666;
+}
+
+.life-icon.lost .tassel-dot {
+  fill: none;
+  stroke: #666;
+}
+
 .life-icon.lost {
   opacity: 0.7;
   filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));

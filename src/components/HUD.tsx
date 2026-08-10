@@ -15,15 +15,10 @@ function HUD({ score, lives }: HUDProps) {
       <div className="hud-right" aria-label={`Lives: ${lives}`}>
         {[0, 1, 2].map((i) => (
           <span key={i} className={`life-icon${i >= lives ? ' lost' : ''}`} aria-hidden="true">
-            <svg viewBox="0 0 22 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-              {/* Flat square top (mortarboard) */}
-              <rect x="2" y="5" width="18" height="10" rx="1" fill="#ffd166" />
-              {/* Cap body - dark crown */}
-              <rect x="5" y="5" width="12" height="4" rx="0.5" fill="#1a2350" />
-              {/* Tassel hanging down */}
-              <line x1="11" y1="5" x2="11" y2="11" stroke="#f2b233" strokeWidth="1.5" />
-              <circle cx="11" cy="11" r="2.5" fill="#ffd166" />
-              <circle cx="11" cy="11" r="2" fill="#e8a31a" />
+            <svg viewBox="0 0 22 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path className="cap-shape" d="M11 2 L19 7 L11 14 L3 7 Z" fill="#ffd166" stroke="#b8860b" strokeWidth="1.5" strokeLinejoin="round"/>
+              <line className="tassel-line" x1="11" y1="14" x2="13" y2="18" stroke="#f2b233" strokeWidth="1.3" strokeLinecap="round"/>
+              <circle className="tassel-dot" cx="13.5" cy="18.5" r="1.8" fill="#ffd166"/>
             </svg>
           </span>
         ))}

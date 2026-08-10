@@ -95,9 +95,9 @@ export function createPlayer(x: number, y: number): Player {
   return {
     x,
     y,
-    // Increased size for better visibility while keeping aspect ratio
-    w: 31,
-    h: 41,
+    // Increased size for better visibility (~40% larger)
+    w: 44,
+    h: 58,
     vx: 0,
     vy: 0,
     onGround: false,

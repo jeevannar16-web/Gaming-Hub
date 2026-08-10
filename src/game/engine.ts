@@ -99,7 +99,7 @@ export class Game {
     this.level = level
     this.camera = new Camera(viewW, level.width)
     this.callbacks = callbacks
-    this.player = createPlayer(PLAYER_SPAWN_X, this.groundY() - 41)
+    this.player = createPlayer(PLAYER_SPAWN_X, this.groundY() - 58)
     this.camera.snap(PLAYER_SPAWN_X)
     for (let i = 0; i < 26; i++) {
       this.clouds.push({
@@ -574,9 +574,9 @@ export class Game {
   // --- World ---------------------------------------------------------------
   private renderTerrain(ctx: CanvasRenderingContext2D): void {
     const tones = [
-      ['#2a2f5a', '#1e2240'],
-      ['#333a70', '#242a52'],
-      ['#2c3266', '#1f2448'],
+      ['#3d4590', '#2a2f5a'],
+      ['#4a529e', '#363d80'],
+      ['#3d4590', '#2a2f5a'],
     ]
     for (const p of this.level.platforms) {
       const t = tones[p.variant % 3]
@@ -601,10 +601,10 @@ export class Game {
 
       // Bright gold highlight strip on top walkable edge (high contrast).
       ctx.fillStyle = '#f2b233'
-      ctx.fillRect(p.x + 8, p.y, p.w - 16, 3)
+      ctx.fillRect(p.x + 8, p.y, p.w - 16, 4)
       // Soft inner glow under the edge.
-      ctx.fillStyle = 'rgba(242,178,51,0.35)'
-      ctx.fillRect(p.x + 8, p.y + 3, p.w - 16, 4)
+      ctx.fillStyle = 'rgba(242,178,51,0.45)'
+      ctx.fillRect(p.x + 8, p.y + 4, p.w - 16, 5)
       // Low-poly notch facets on the sides.
       ctx.fillStyle = 'rgba(0,0,0,0.16)'
       ctx.beginPath()
@@ -886,7 +886,7 @@ export class Game {
     ctx.fill()
     ctx.restore()
 
-    // Robe body (rounded, slightly flared) - unchanged
+    // Robe body (rounded, slightly flared) - with visible rim outline
     const grad = ctx.createLinearGradient(0, -h, 0, 0)
     grad.addColorStop(0, '#3443a3')
     grad.addColorStop(1, '#222c6b')
@@ -900,6 +900,10 @@ export class Game {
     ctx.lineTo(w / 2 + 4, 0)
     ctx.closePath()
     ctx.fill()
+    // Bright rim/outline for silhouette clarity against terrain.
+    ctx.strokeStyle = 'rgba(242,178,51,0.7)'
+    ctx.lineWidth = 2
+    ctx.stroke()
     // Hem highlight
     ctx.fillStyle = 'rgba(255,255,255,0.09)'
     ctx.fillRect(-w / 2 + 3, -5, w - 6, 3)
