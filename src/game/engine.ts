@@ -538,11 +538,11 @@ export class Game {
 
   private drawSkyline(ctx: CanvasRenderingContext2D, viewW: number, baseY: number, color: string, offset: number, patternW: number, maxH: number): void {
     ctx.fillStyle = color
+    const heights = [maxH * 0.7, maxH, maxH * 0.5, maxH * 0.85, maxH * 0.6, maxH * 0.95]
+    const widths = [70, 50, 90, 60, 80, 55]
     const span = viewW + patternW * 2
     const start = -patternW - ((offset % patternW) + patternW) % patternW
     for (let x = start; x < span; x += patternW) {
-      const heights = [maxH * 0.7, maxH, maxH * 0.5, maxH * 0.85, maxH * 0.6, maxH * 0.95]
-      const widths = [70, 50, 90, 60, 80, 55]
       heights.forEach((h, i) => {
         const bx = x + i * (patternW / 6)
         ctx.fillRect(bx, baseY - h, widths[i], h)

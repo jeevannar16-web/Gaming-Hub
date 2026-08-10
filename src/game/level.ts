@@ -82,7 +82,7 @@ export function buildLevel(): LevelData {
     platform(11200, 420, 160, 40, 1),
     platform(11360, 380, 160, 40, 2),
     platform(11520, 340, 160, 40, 1),
-    platform(11680, 340, 40, 40, 2),
+    platform(11720, 420, 200, 40, 1),
 
     platform(12000, GROUND_Y, 3200, 220),
   ]
