@@ -126,7 +126,7 @@ export class Game {
     this.level.coins.forEach((c) => (c.collected = false))
     this.level.checkpoints.forEach((c) => (c.active = false))
     this.level.flag.unfurl = 0
-    this.player = createPlayer(PLAYER_SPAWN_X, this.groundY() - 34)
+    this.player = createPlayer(PLAYER_SPAWN_X, this.groundY() - 58)
     this.player.facing = 1
     this.camera.snap(PLAYER_SPAWN_X)
   }
@@ -161,7 +161,9 @@ export class Game {
       }
       this.updatePlayer(dt, input)
       this.checkInteractions()
-      this.camera.update(dt, this.player.x + this.player.w / 2)
+      if (Number.isFinite(this.player.x) && Number.isFinite(this.player.y)) {
+        this.camera.update(dt, this.player.x + this.player.w / 2)
+      }
     } else if (this.mode === 'menu') {
       this.camera.x = 0
     } else if (this.mode === 'win') {
@@ -250,12 +252,17 @@ export class Game {
           p.y = plat.y - p.h
           p.vy = 0
           p.onGround = true
-          if (wasFalling) p.squash = -0.6 // squash on landing
+          if (wasFalling) p.squash = -0.6
         } else if (p.vy < 0) {
           p.y = plat.y + plat.h
           p.vy = 0
         }
       }
+    }
+
+    if (Number.isFinite(p.x) && Number.isFinite(p.y)) {
+      p.x = Math.max(0, Math.min(this.level.width - p.w, p.x))
+      p.y = Math.max(-200, Math.min(KILL_Y, p.y))
     }
   }
 
@@ -519,6 +526,7 @@ export class Game {
     patternW: number,
     peaks: number[],
   ): void {
+    if (!peaks || peaks.length === 0 || patternW <= 0) return
     ctx.fillStyle = color
     const span = viewW + patternW * 2
     const start = -patternW - ((offset % patternW) + patternW) % patternW
@@ -537,6 +545,7 @@ export class Game {
   }
 
   private drawSkyline(ctx: CanvasRenderingContext2D, viewW: number, baseY: number, color: string, offset: number, patternW: number, maxH: number): void {
+    if (maxH <= 0 || patternW <= 0) return
     ctx.fillStyle = color
     const heights = [maxH * 0.7, maxH, maxH * 0.5, maxH * 0.85, maxH * 0.6, maxH * 0.95]
     const widths = [70, 50, 90, 60, 80, 55]
@@ -546,7 +555,6 @@ export class Game {
       heights.forEach((h, i) => {
         const bx = x + i * (patternW / 6)
         ctx.fillRect(bx, baseY - h, widths[i], h)
-        // a couple of lit windows
         if (i % 2 === 0) {
           ctx.fillStyle = 'rgba(255,209,102,0.55)'
           ctx.fillRect(bx + 12, baseY - h + 14, 4, 6)
@@ -558,6 +566,7 @@ export class Game {
   }
 
   private drawHills(ctx: CanvasRenderingContext2D, viewW: number, baseY: number, color: string, offset: number, patternW: number, amp: number, len: number): void {
+    if (patternW <= 0 || len <= 0) return
     ctx.fillStyle = color
     const span = viewW + patternW * 2
     const start = -patternW - ((offset % patternW) + patternW) % patternW
@@ -719,6 +728,7 @@ export class Game {
 
   private renderSpikes(ctx: CanvasRenderingContext2D): void {
     for (const s of this.level.spikes) {
+      if (s.w <= 0 || s.h <= 0) continue
       const step = 20
       for (let x = s.x; x < s.x + s.w - 2; x += step) {
         const baseW = Math.min(step, s.x + s.w - x)
@@ -747,6 +757,7 @@ export class Game {
 
   private renderMovers(ctx: CanvasRenderingContext2D): void {
     for (const m of this.level.movers) {
+      if (m.r <= 0) continue
       ctx.save()
       ctx.translate(m.x, m.y + Math.sin(this.time * 2.5 + m.seed) * 2)
 
@@ -852,6 +863,7 @@ export class Game {
   }
 
   private drawPlayer(ctx: CanvasRenderingContext2D, p: Player, cx: number, bottom: number, lean: number, squash: number): void {
+    if (p.w <= 0 || p.h <= 0) return
     ctx.save()
     ctx.translate(cx, bottom)
     ctx.rotate(lean)
@@ -972,7 +984,6 @@ export class Game {
     ctx.beginPath()
     ctx.arc(ex, ey + 1, 1, 0, Math.PI * 2)
     ctx.fill()
-    ctx.restore()
 
     // Feet
     ctx.fillStyle = '#161c47'

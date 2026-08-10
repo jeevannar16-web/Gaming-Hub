@@ -95,13 +95,20 @@ export default function GameCanvas({ gameState, inputRef, callbacks }: GameCanva
       dt = Math.min(dt, 0.033)
 
       if (!pausedRef.current) {
-        const input = inputRef.current
-        game.update(dt, input)
+        try {
+          game.update(dt, inputRef.current)
+        } catch (err) {
+          console.error('[GameCanvas] update error:', err)
+        }
       }
 
       ctx.save()
       ctx.scale(sizeRef.current.dpr, sizeRef.current.dpr)
-      game.render(ctx, VIEW_W, VIEW_H)
+      try {
+        game.render(ctx, VIEW_W, VIEW_H)
+      } catch (err) {
+        console.error('[GameCanvas] render error:', err)
+      }
       ctx.restore()
 
       rafRef.current = requestAnimationFrame(loop)
