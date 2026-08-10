@@ -23,6 +23,11 @@ export class Camera {
     this.x = 0
   }
 
+  /** Returns the view width (used by particle systems). */
+  getViewW(): number {
+    return this.viewW
+  }
+
   /**
    * Move the camera toward targetX. The dead zone keeps the camera still while
    * the target sits inside the central band, preventing micro-jitter; beyond it
