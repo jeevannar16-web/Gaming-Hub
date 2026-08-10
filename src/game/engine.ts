@@ -309,9 +309,15 @@ export class Game {
    * Axis-separated AABB resolution: move along X first and resolve, then move
    * along Y and resolve. Resolving one axis at a time prevents corner clipping
    * and lets us determine the side of impact (landing, ceiling, or wall).
+   *
+   * Gap protection: if the player was standing on a platform and horizontal
+   * motion would carry them into a gap, revert the horizontal move so they
+   * don't accidentally walk off ledges.
    */
   private moveAndCollide(p: Player, dt: number): void {
     const plats = this.level.platforms
+    const prevX = p.x
+    const wasOnGround = p.onGround
 
     p.x += p.vx * dt
     for (const plat of plats) {
@@ -352,6 +358,11 @@ export class Game {
           p.vy = 0
         }
       }
+    }
+
+    if (wasOnGround && !p.onGround && p.vy > 0) {
+      p.x = prevX
+      p.vx = 0
     }
 
     if (Number.isFinite(p.x) && Number.isFinite(p.y)) {

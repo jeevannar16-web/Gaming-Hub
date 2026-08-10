@@ -57,39 +57,39 @@ export function buildLevel(): LevelData {
   const platforms: Platform[] = [
     platform(0, GROUND_Y, 1200, 200),
     platform(1200, GROUND_Y, 1200, 200),
-    platform(2480, GROUND_Y, 1200, 200),
+    platform(2400, GROUND_Y, 1200, 200),
 
     platform(560, 400, 120, 40, 1),
     platform(800, 360, 120, 40, 2),
     platform(1040, 320, 120, 40, 1),
 
-    platform(3920, GROUND_Y, 800, 200),
-    platform(4080, 400, 120, 40, 1),
-    platform(4320, 360, 120, 40, 2),
-    platform(4560, 320, 120, 40, 1),
+    platform(4080, GROUND_Y, 800, 200),
+    platform(4240, 400, 120, 40, 1),
+    platform(4480, 360, 120, 40, 2),
+    platform(4720, 320, 120, 40, 1),
 
-    platform(5000, GROUND_Y, 1200, 200),
+    platform(5160, GROUND_Y, 1200, 200),
 
-    platform(6400, 400, 120, 40, 1),
-    platform(6640, 360, 120, 40, 2),
-    platform(6880, 320, 120, 40, 1),
-    platform(7120, 400, 120, 40, 2),
-    platform(7360, 440, 160, 40, 1),
+    platform(6560, 400, 120, 40, 1),
+    platform(6800, 360, 120, 40, 2),
+    platform(7040, 320, 120, 40, 1),
+    platform(7280, 400, 120, 40, 2),
+    platform(7520, 440, 160, 40, 1),
 
-    platform(7680, GROUND_Y, 1040, 200),
-    platform(8800, 400, 200, 40, 1),
+    platform(7840, GROUND_Y, 1040, 200),
+    platform(8880, 400, 200, 40, 1),
 
-    platform(9120, 400, 160, 40, 1),
-    platform(9360, 360, 160, 40, 2),
-    platform(9600, 320, 160, 40, 1),
-    platform(9840, GROUND_Y, 720, 200),
+    platform(9200, 400, 160, 40, 1),
+    platform(9440, 360, 160, 40, 2),
+    platform(9680, 320, 160, 40, 1),
+    platform(9920, GROUND_Y, 720, 200),
 
-    platform(10560, 400, 120, 40, 1),
-    platform(10800, 360, 120, 40, 2),
-    platform(11040, 320, 120, 40, 1),
-    platform(11280, 400, 160, 40, 1),
+    platform(10800, 400, 120, 40, 1),
+    platform(11040, 360, 120, 40, 2),
+    platform(11280, 320, 120, 40, 1),
+    platform(11520, 400, 160, 40, 1),
 
-    platform(11600, GROUND_Y, 2400, 200),
+    platform(11840, GROUND_Y, 2400, 200),
   ]
 
   // -----------------------------------------------------------------------
@@ -98,75 +98,75 @@ export function buildLevel(): LevelData {
   const coins: Coin[] = [
     ...coinsLine(160, 400, 5, 200),
     ...coinsArc(600, 380, 3, 120, 18),
-    coin(4160, 360, 1),
-    coin(4400, 320, 2),
-    coin(4640, 280, 3),
-    ...coinsLine(5200, 400, 7, 120),
-    coin(6480, 360, 1),
-    coin(6720, 320, 2),
-    coin(6960, 360, 1),
-    ...coinsLine(7880, 360, 5, 120),
-    coin(9200, 360, 1),
-    coin(9440, 320, 2),
-    coin(9680, 280, 3),
-    coin(10640, 360, 1),
-    coin(10880, 320, 2),
-    coin(11120, 280, 3),
-    ...coinsLine(11700, 400, 14, 140),
+    coin(4320, 360, 1),
+    coin(4560, 320, 2),
+    coin(4800, 280, 3),
+    ...coinsLine(5360, 400, 7, 120),
+    coin(6640, 360, 1),
+    coin(6880, 320, 2),
+    coin(7120, 360, 1),
+    ...coinsLine(8040, 360, 5, 120),
+    coin(9360, 360, 1),
+    coin(9600, 320, 2),
+    coin(9840, 280, 3),
+    coin(10800, 360, 1),
+    coin(11040, 320, 2),
+    coin(11280, 280, 3),
+    ...coinsLine(11940, 400, 14, 140),
   ]
 
   const spikeList: SpikeStrip[] = [
-    spikes(2800, 120),
-    spikes(5600, 120),
-    spikes(9800, 120),
-    spikes(11600, 120),
+    spikes(3200, 120),
+    spikes(6000, 120),
+    spikes(10400, 120),
+    spikes(12200, 120),
   ]
 
   const movers: MovingHazard[] = [
-    mover(8040, 398, 22, 7960, 8240, 140, 7),
-    mover(9000, 398, 22, 8920, 9100, 160, 11),
+    mover(8200, 398, 22, 8120, 8400, 140, 7),
+    mover(9160, 398, 22, 9080, 9260, 160, 11),
   ]
 
   const checkpoints: Checkpoint[] = [
     { x: 2560, y: GROUND_Y, active: false },
-    { x: 4960, y: GROUND_Y, active: false },
-    { x: 7440, y: GROUND_Y, active: false },
-    { x: 9840, y: GROUND_Y, active: false },
+    { x: 5120, y: GROUND_Y, active: false },
+    { x: 7760, y: GROUND_Y, active: false },
+    { x: 10080, y: GROUND_Y, active: false },
   ]
 
   const flag: Flag = {
-    x: 13800,
+    x: 14000,
     y: GROUND_Y,
     poleTop: 300,
     unfurl: 0,
   }
 
   const movingPlatforms: MovingPlatform[] = [
-    movingPlatform(3200, 320, 120, 28, 'x', 100, 60),
-    movingPlatform(5600, 280, 120, 28, 'y', 80, 55),
-    movingPlatform(8400, 320, 120, 28, 'x', 120, 70),
-    movingPlatform(10000, 280, 120, 28, 'y', 100, 60),
-    movingPlatform(12000, 320, 120, 28, 'x', 140, 75),
+    movingPlatform(3360, 320, 120, 28, 'x', 100, 60),
+    movingPlatform(5760, 280, 120, 28, 'y', 80, 55),
+    movingPlatform(8560, 320, 120, 28, 'x', 120, 70),
+    movingPlatform(10240, 280, 120, 28, 'y', 100, 60),
+    movingPlatform(12240, 320, 120, 28, 'x', 140, 75),
   ]
 
   const bouncePads: BouncePad[] = [
-    bouncePad(3920, GROUND_Y - 18, 80, 18, 1.6),
-    bouncePad(7680, GROUND_Y - 18, 80, 18, 1.7),
-    bouncePad(9800, GROUND_Y - 18, 80, 18, 1.5),
+    bouncePad(4080, GROUND_Y - 18, 80, 18, 1.6),
+    bouncePad(7840, GROUND_Y - 18, 80, 18, 1.7),
+    bouncePad(9920, GROUND_Y - 18, 80, 18, 1.5),
   ]
 
   const windZones: WindZone[] = [
-    windZone(6400, 200, 280, 220, 280, 1),
-    windZone(8800, 200, 260, 220, -260, -1),
-    windZone(10800, 200, 300, 200, 300, 1),
+    windZone(6560, 200, 280, 220, 280, 1),
+    windZone(8960, 200, 260, 220, -260, -1),
+    windZone(11040, 200, 300, 200, 300, 1),
   ]
 
   const powerUps: PowerUp[] = [
     powerUp(600, 320, 'doubleJump'),
-    powerUp(4160, 320, 'speedBoost'),
-    powerUp(6480, 320, 'shield'),
-    powerUp(9200, 320, 'magnet'),
-    powerUp(12000, 300, 'doubleJump'),
+    powerUp(4320, 320, 'speedBoost'),
+    powerUp(6640, 320, 'shield'),
+    powerUp(9360, 320, 'magnet'),
+    powerUp(12240, 300, 'doubleJump'),
   ]
 
   return {
