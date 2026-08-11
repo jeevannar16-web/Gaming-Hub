@@ -52,7 +52,7 @@ function App() {
           if (state === 'menu') {
             setGameState('playing')
           } else if (state === 'win' || state === 'over') {
-            setGameState('menu')
+            setGameState('playing')
           }
         }
       }
@@ -64,10 +64,10 @@ function App() {
       if (e.code === 'KeyA' || e.code === 'ArrowLeft') inputRef.current.left = false
       if (e.code === 'KeyD' || e.code === 'ArrowRight') inputRef.current.right = false
       if (e.code === 'Space' || e.code === 'ArrowUp' || e.code === 'KeyW') inputRef.current.jumpHeld = false
-      if (e.code === 'Home' || e.code === 'End') {
-        inputRef.current.left = false
-        inputRef.current.right = false
-      }
+      // Release only the direction each key controls so holding a movement
+      // key isn't cancelled by a stray Home/End keyup.
+      if (e.code === 'Home') inputRef.current.left = false
+      if (e.code === 'End') inputRef.current.right = false
     }
 
     window.addEventListener('keydown', onKeyDown)
@@ -104,8 +104,8 @@ function App() {
       <HUD score={score} lives={lives} />
 
       {gameState === 'menu' && <StartScreen onStart={startGame} />}
-      {gameState === 'win' && <WinScreen score={score} onRestart={() => setGameState('menu')} />}
-      {gameState === 'over' && <GameOverScreen score={score} onRestart={() => setGameState('menu')} />}
+      {gameState === 'win' && <WinScreen score={score} onRestart={() => setGameState('playing')} />}
+      {gameState === 'over' && <GameOverScreen score={score} onRestart={() => setGameState('playing')} />}
 
       <TouchControls inputRef={inputRef} />
     </div>

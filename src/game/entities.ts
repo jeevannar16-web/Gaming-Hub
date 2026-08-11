@@ -155,6 +155,8 @@ export function createPlayer(x: number, y: number): Player {
 
 export function rectsOverlap(a: Rect, b: Rect): boolean {
   return (
+    Number.isFinite(a.x) && Number.isFinite(a.y) && Number.isFinite(a.w) && Number.isFinite(a.h) &&
+    Number.isFinite(b.x) && Number.isFinite(b.y) && Number.isFinite(b.w) && Number.isFinite(b.h) &&
     a.x < b.x + b.w + 1 &&
     a.x + a.w + 1 > b.x &&
     a.y < b.y + b.h + 1 &&
@@ -163,11 +165,11 @@ export function rectsOverlap(a: Rect, b: Rect): boolean {
 }
 
 export function circleOverlapsRect(cx: number, cy: number, r: number, r2: Rect): boolean {
-  const px = Math.max(r2.x, Math.min(cx, r2.x + r2.w))
-  const py = Math.max(r2.y, Math.min(cy, r2.y + r2.h))
-  const dx = cx - px
-  const dy = cy - py
-  return dx * dx + dy * dy <= r * r
+  const px = Number.isFinite(cx) ? Math.max(r2.x, Math.min(cx, r2.x + r2.w)) : r2.x
+  const py = Number.isFinite(cy) ? Math.max(r2.y, Math.min(cy, r2.y + r2.h)) : r2.y
+  const dx = Number.isFinite(cx - px) ? cx - px : 0
+  const dy = Number.isFinite(cy - py) ? cy - py : 0
+  return Number.isFinite(r) && dx * dx + dy * dy <= r * r
 }
 
 export function createMovingPlatform(x: number, y: number, w: number, h: number, axis: 'x' | 'y', distance: number, speed: number, phase = 0): MovingPlatform {

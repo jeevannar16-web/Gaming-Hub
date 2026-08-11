@@ -120,20 +120,15 @@ export default function GameCanvas({ gameState, inputRef, callbacks }: GameCanva
 
   useEffect(() => {
     const onInteraction = () => {
-      unlockAudio()
-      window.removeEventListener('keydown', onInteraction)
-      window.removeEventListener('mousedown', onInteraction)
-      window.removeEventListener('touchstart', onInteraction)
-    }
-    window.addEventListener('keydown', onInteraction)
-    window.addEventListener('mousedown', onInteraction)
-    window.addEventListener('touchstart', onInteraction)
+      unlockAudio();
+    };
+    window.addEventListener('mousedown', onInteraction);
+    window.addEventListener('touchstart', onInteraction);
     return () => {
-      window.removeEventListener('keydown', onInteraction)
-      window.removeEventListener('mousedown', onInteraction)
-      window.removeEventListener('touchstart', onInteraction)
-    }
-  }, [])
+      window.removeEventListener('mousedown', onInteraction);
+      window.removeEventListener('touchstart', onInteraction);
+    };
+  }, []);
 
   return <canvas ref={canvasRef} className="game-canvas" />
 }
