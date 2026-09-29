@@ -228,6 +228,7 @@ html, body, #root {
   height: 140px;
   pointer-events: auto;
   touch-action: none;
+  position: relative;
 }
 
 .touch-jump {
@@ -235,6 +236,7 @@ html, body, #root {
   height: 100px;
   pointer-events: auto;
   touch-action: none;
+  position: relative;
 }
 
 .touch-btn {
