@@ -1,0 +1,155 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720" role="img" aria-label="Neon Arcade — a dark gaming hub with two glowing game cards: Cap Quest, a platformer, and Spinora, a wheel random picker">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#08071A"/>
+      <stop offset="0.55" stop-color="#0E0B26"/>
+      <stop offset="1" stop-color="#150F38"/>
+    </linearGradient>
+    <radialGradient id="glowPink" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#FF2FB8" stop-opacity="0.5"/>
+      <stop offset="0.55" stop-color="#FF2FB8" stop-opacity="0.18"/>
+      <stop offset="1" stop-color="#FF2FB8" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="glowCyan" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#34F5FF" stop-opacity="0.46"/>
+      <stop offset="0.55" stop-color="#34F5FF" stop-opacity="0.16"/>
+      <stop offset="1" stop-color="#34F5FF" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="neon" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#FF2FB8"/>
+      <stop offset="0.55" stop-color="#FFD166"/>
+      <stop offset="1" stop-color="#34F5FF"/>
+    </linearGradient>
+    <linearGradient id="card" x1="0" y1="0" x2="0.6" y2="1">
+      <stop offset="0" stop-color="#FFFFFF" stop-opacity="0.07"/>
+      <stop offset="1" stop-color="#FFFFFF" stop-opacity="0.02"/>
+    </linearGradient>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#1B1B4B"/>
+      <stop offset="0.7" stop-color="#3B2D6E"/>
+      <stop offset="1" stop-color="#F2B233"/>
+    </linearGradient>
+    <linearGradient id="gold" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#FFE08A"/>
+      <stop offset="1" stop-color="#E0951C"/>
+    </linearGradient>
+    <linearGradient id="ice" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#B7F7FF"/>
+      <stop offset="1" stop-color="#A78BFA"/>
+    </linearGradient>
+    <linearGradient id="spBg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#241447"/>
+      <stop offset="1" stop-color="#0E0A26"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="1280" height="720" fill="url(#bg)"/>
+  <circle cx="150" cy="640" r="420" fill="url(#glowPink)"/>
+  <circle cx="1140" cy="80" r="400" fill="url(#glowCyan)"/>
+
+  <!-- header -->
+  <g transform="translate(140 108)">
+    <rect x="0" y="0" width="64" height="64" rx="18" fill="none" stroke="url(#neon)" stroke-width="3"/>
+    <path d="M20 26h24v10H20z" fill="none" stroke="#FF2FB8" stroke-width="3.4" stroke-linejoin="round"/>
+    <path d="M15 32v5M21 32v5M27 32v5" stroke="#34F5FF" stroke-width="3" stroke-linecap="round"/>
+    <circle cx="41" cy="35" r="3" fill="#FFD166"/>
+    <path d="M26 45a6 6 0 0 0 12 0" fill="none" stroke="#FF2FB8" stroke-width="3.4" stroke-linecap="round"/>
+  </g>
+  <text x="228" y="128" font-family="Space Grotesk, Segoe UI, system-ui, sans-serif" font-size="17" font-weight="700" letter-spacing="6.5" fill="#34F5FF">POCKET ARCADE</text>
+  <text x="226" y="182" font-family="Space Grotesk, Segoe UI, system-ui, sans-serif" font-size="46" font-weight="700" letter-spacing="2" fill="#F5F5FF">NEON <tspan fill="url(#neon)">ARCADE</tspan></text>
+  <text x="228" y="212" font-family="Nunito, Segoe UI, system-ui, sans-serif" font-size="15" font-weight="600" fill="#9B9BC0">Two games. Zero downloads. All offline.</text>
+
+  <!-- collection chip -->
+  <g transform="translate(1040 116)">
+    <rect x="0" y="0" width="104" height="78" rx="16" fill="#FFFFFF" fill-opacity="0.05" stroke="#FFFFFF" stroke-opacity="0.12"/>
+    <text x="52" y="42" text-anchor="middle" font-family="Space Grotesk, Segoe UI, system-ui, sans-serif" font-size="27" font-weight="700" fill="#FFD166">2</text>
+    <text x="52" y="62" text-anchor="middle" font-family="Nunito, Segoe UI, system-ui, sans-serif" font-size="10" font-weight="800" letter-spacing="3" fill="#9B9BC0">GAMES</text>
+  </g>
+
+  <!-- card 1: Cap Quest -->
+  <g transform="translate(140 268)">
+    <rect x="0" y="0" width="480" height="300" rx="26" fill="url(#card)" stroke="#FFFFFF" stroke-opacity="0.1"/>
+    <g transform="translate(20 20)">
+      <clipPath id="clipCQ"><rect width="440" height="176" rx="16"/></clipPath>
+      <g clip-path="url(#clipCQ)">
+        <rect width="440" height="176" fill="url(#sky)"/>
+        <circle cx="46" cy="30" r="2" fill="#FFFFFF" opacity="0.9"/>
+        <circle cx="140" cy="22" r="1.6" fill="#FFFFFF" opacity="0.7"/>
+        <circle cx="248" cy="34" r="2" fill="#FFFFFF" opacity="0.85"/>
+        <circle cx="330" cy="20" r="1.5" fill="#FFFFFF" opacity="0.7"/>
+        <circle cx="392" cy="44" r="1.7" fill="#FFFFFF" opacity="0.75"/>
+        <circle cx="380" cy="52" r="18" fill="#FFE08A" opacity="0.92"/>
+        <circle cx="388" cy="45" r="15" fill="#3B2D6E"/>
+        <rect x="40" y="128" width="360" height="18" rx="7" fill="#1A1750"/>
+        <rect x="40" y="128" width="360" height="8" rx="4" fill="#2B2870"/>
+        <rect x="110" y="100" width="16" height="28" rx="3" fill="#1A1750"/>
+        <rect x="300" y="110" width="16" height="18" rx="3" fill="#1A1750"/>
+        <path d="M196 62L246 82L196 102L146 82Z" fill="#FFD166" stroke="#B8860B" stroke-width="2.4" stroke-linejoin="round"/>
+        <line x1="196" y1="102" x2="203" y2="122" stroke="#F2B233" stroke-width="3" stroke-linecap="round"/>
+        <circle cx="205" cy="123" r="4" fill="#FFD166"/>
+        <circle cx="150" cy="112" r="6" fill="#FFE08A" stroke="#B8860B" stroke-width="1.6"/>
+        <circle cx="250" cy="114" r="5" fill="#FFE08A" stroke="#B8860B" stroke-width="1.6"/>
+      </g>
+      <rect x="14" y="14" width="112" height="26" rx="13" fill="#0B0B1A" fill-opacity="0.55" stroke="#FFD166" stroke-opacity="0.35"/>
+      <text x="70" y="31" text-anchor="middle" font-family="Nunito, sans-serif" font-size="10.5" font-weight="800" letter-spacing="2.4" fill="#FFD166">PLATFORMER</text>
+    </g>
+    <g transform="translate(20 210)">
+      <text x="0" y="20" font-family="Space Grotesk, Segoe UI, system-ui, sans-serif" font-size="27" font-weight="700" letter-spacing="1.4" fill="#FFE9B0">CAP QUEST</text>
+      <text x="0" y="46" font-family="Nunito, sans-serif" font-size="13.5" fill="#A6A6C9">A graduation platformer — collect coins, dodge gaps</text>
+      <text x="0" y="65" font-family="Nunito, sans-serif" font-size="13.5" fill="#A6A6C9">and rush to the ceremony before the bell rings.</text>
+      <g transform="translate(0 80)">
+        <rect x="0" y="0" width="440" height="46" rx="14" fill="url(#gold)"/>
+        <text x="220" y="30" text-anchor="middle" font-family="Space Grotesk, Segoe UI, system-ui, sans-serif" font-size="14.5" font-weight="700" letter-spacing="3" fill="#221A02">PLAY NOW</text>
+        <path d="M330 23h18M342 17l6 6-6 6" fill="none" stroke="#221A02" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+      </g>
+    </g>
+  </g>
+
+  <!-- card 2: Spinora -->
+  <g transform="translate(660 268)">
+    <rect x="0" y="0" width="480" height="300" rx="26" fill="url(#card)" stroke="#FFFFFF" stroke-opacity="0.1"/>
+    <g transform="translate(20 20)">
+      <clipPath id="clipSP"><rect width="440" height="176" rx="16"/></clipPath>
+      <g clip-path="url(#clipSP)">
+        <rect width="440" height="176" fill="url(#spBg)"/>
+        <circle cx="52" cy="42" r="2.4" fill="#A78BFA" opacity="0.8"/>
+        <circle cx="392" cy="34" r="2.6" fill="#34F5FF" opacity="0.8"/>
+        <circle cx="66" cy="140" r="2.2" fill="#FFD166" opacity="0.7"/>
+        <circle cx="386" cy="146" r="2.4" fill="#FF2FB8" opacity="0.8"/>
+        <circle cx="336" cy="98" r="2" fill="#4ADE80" opacity="0.7"/>
+        <circle cx="120" cy="148" r="2.2" fill="#22D3EE" opacity="0.6"/>
+        <g transform="translate(220 92)">
+          <g transform="rotate(22.5)">
+            <path d="M0 0 L0 -56 A56 56 0 0 1 39.6 -39.6 Z" fill="#FF2FB8"/>
+            <path d="M0 0 L0 -56 A56 56 0 0 1 39.6 -39.6 Z" fill="#34F5FF" transform="rotate(45)"/>
+            <path d="M0 0 L0 -56 A56 56 0 0 1 39.6 -39.6 Z" fill="#FFD166" transform="rotate(90)"/>
+            <path d="M0 0 L0 -56 A56 56 0 0 1 39.6 -39.6 Z" fill="#A78BFA" transform="rotate(135)"/>
+            <path d="M0 0 L0 -56 A56 56 0 0 1 39.6 -39.6 Z" fill="#4ADE80" transform="rotate(180)"/>
+            <path d="M0 0 L0 -56 A56 56 0 0 1 39.6 -39.6 Z" fill="#FB923C" transform="rotate(225)"/>
+            <path d="M0 0 L0 -56 A56 56 0 0 1 39.6 -39.6 Z" fill="#F43F5E" transform="rotate(270)"/>
+            <path d="M0 0 L0 -56 A56 56 0 0 1 39.6 -39.6 Z" fill="#22D3EE" transform="rotate(315)"/>
+          </g>
+          <circle r="52" fill="none" stroke="#0E0A26" stroke-width="4"/>
+          <circle r="21" fill="#0E0A26"/>
+          <circle r="9" fill="#FFFFFF"/>
+          <circle r="4" fill="#0E0A26"/>
+        </g>
+        <path d="M208 22 L232 22 L220 42 Z" fill="#34F5FF"/>
+      </g>
+      <rect x="14" y="14" width="72" height="26" rx="13" fill="#0B0B1A" fill-opacity="0.55" stroke="#34F5FF" stroke-opacity="0.35"/>
+      <text x="50" y="31" text-anchor="middle" font-family="Nunito, sans-serif" font-size="10.5" font-weight="800" letter-spacing="2.4" fill="#B7F7FF">WHEEL</text>
+    </g>
+    <g transform="translate(20 210)">
+      <text x="0" y="20" font-family="Space Grotesk, Segoe UI, system-ui, sans-serif" font-size="27" font-weight="700" letter-spacing="1.4" fill="#D9CCFF">SPINORA</text>
+      <text x="0" y="46" font-family="Nunito, sans-serif" font-size="13.5" fill="#A6A6C9">Spin the wheel and pick a winner — perfect for giveaways,</text>
+      <text x="0" y="65" font-family="Nunito, sans-serif" font-size="13.5" fill="#A6A6C9">raffles, teams and everyday decisions.</text>
+      <g transform="translate(0 80)">
+        <rect x="0" y="0" width="440" height="46" rx="14" fill="url(#ice)"/>
+        <text x="220" y="30" text-anchor="middle" font-family="Space Grotesk, Segoe UI, system-ui, sans-serif" font-size="14.5" font-weight="700" letter-spacing="3" fill="#0B0B1A">PLAY NOW</text>
+        <path d="M330 23h18M342 17l6 6-6 6" fill="none" stroke="#0B0B1A" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+      </g>
+    </g>
+  </g>
+
+  <text x="640" y="648" text-anchor="middle" font-family="Nunito, sans-serif" font-size="12" font-weight="700" letter-spacing="2.4" fill="#6F6F98">NEON ARCADE · 2 GAMES · MADE WITH ♥ ON ARCH</text>
+</svg>
