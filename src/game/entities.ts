@@ -157,10 +157,10 @@ export function rectsOverlap(a: Rect, b: Rect): boolean {
   return (
     Number.isFinite(a.x) && Number.isFinite(a.y) && Number.isFinite(a.w) && Number.isFinite(a.h) &&
     Number.isFinite(b.x) && Number.isFinite(b.y) && Number.isFinite(b.w) && Number.isFinite(b.h) &&
-    a.x < b.x + b.w + 1 &&
-    a.x + a.w + 1 > b.x &&
-    a.y < b.y + b.h + 1 &&
-    a.y + a.h + 1 > b.y
+    a.x < b.x + b.w &&
+    a.x + a.w > b.x &&
+    a.y < b.y + b.h &&
+    a.y + a.h > b.y
   )
 }
 
