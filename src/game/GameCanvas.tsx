@@ -11,6 +11,12 @@ interface GameCanvasProps {
 
 const VIEW_W = 960
 const VIEW_H = 540
+/** Bottom of the ground block; never frame below it (that would be void). */
+const WORLD_BOTTOM = 660
+/** Top colour of the engine's sky gradient, so padding joins invisibly. */
+const SKY_TOP = '#141433'
+/** Darkest tone of the terrain gradient, so padding under the ground matches. */
+const GROUND_UNDER = '#1f2448'
 
 export default function GameCanvas({ gameState, inputRef, callbacks }: GameCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
@@ -18,7 +24,9 @@ export default function GameCanvas({ gameState, inputRef, callbacks }: GameCanva
   const rafRef = useRef<number>(0)
   const lastTimeRef = useRef<number>(0)
   const pausedRef = useRef<boolean>(false)
-  const sizeRef = useRef<{ w: number; h: number; dpr: number }>({ w: VIEW_W, h: VIEW_H, dpr: 1 })
+  const sizeRef = useRef<{ dpr: number; scale: number; viewW: number; bandH: number; padY: number }>(
+    { dpr: 1, scale: 1, viewW: VIEW_W, bandH: VIEW_H, padY: 0 }
+  )
 
   const callbacksRef = useRef(callbacks)
   callbacksRef.current = callbacks
@@ -49,20 +57,28 @@ export default function GameCanvas({ gameState, inputRef, callbacks }: GameCanva
       if (!canvasRef.current) return
       const canvas = canvasRef.current
       const dpr = Math.max(1, Math.min(window.devicePixelRatio || 1, 2))
-      const maxW = window.innerWidth
-      const maxH = window.innerHeight
-      const ratio = VIEW_W / VIEW_H
-      let w = maxW
-      let h = Math.round(w / ratio)
-      if (h > maxH) {
-        h = maxH
-        w = Math.round(h * ratio)
-      }
+      const w = window.innerWidth
+      const h = window.innerHeight
+
+      // The canvas always covers the whole viewport, so there are never any
+      // empty letterbox bars showing the page background. The engine draws in a
+      // fixed VIEW_W x VIEW_H design space, so we scale that space uniformly
+      // (no distortion, no cropping) and widen it on wide screens, which shows
+      // more of the level instead of leaving a bar at the left edge.
+      const scale = Math.min(w / VIEW_W, h / VIEW_H)
+      const viewW = Math.ceil(w / scale)
+      const viewH = h / scale
+      // Never show less than the designed frame, but stop at the bottom of the
+      // ground block so tall screens pad with sky/ground rather than void.
+      const bandH = Math.min(viewH, WORLD_BOTTOM)
+      const padY = (viewH - bandH) / 2
+
       canvas.style.width = w + 'px'
       canvas.style.height = h + 'px'
-      canvas.width = w * dpr
-      canvas.height = h * dpr
-      sizeRef.current = { w, h, dpr }
+      canvas.width = Math.ceil(w * dpr)
+      canvas.height = Math.ceil(h * dpr)
+      sizeRef.current = { dpr, scale, viewW, bandH, padY }
+      gameRef.current?.setViewW(viewW)
     }
     resize()
     window.addEventListener('resize', resize)
@@ -102,10 +118,24 @@ export default function GameCanvas({ gameState, inputRef, callbacks }: GameCanva
         }
       }
 
+      const { dpr, scale, viewW, bandH, padY } = sizeRef.current
       ctx.save()
-      ctx.scale(sizeRef.current.dpr, sizeRef.current.dpr)
+      ctx.setTransform(dpr * scale, 0, 0, dpr * scale, 0, 0)
+      ctx.translate(0, padY)
       try {
-        game.render(ctx, VIEW_W, VIEW_H)
+        // Fill the vertical padding with the game's own colours so the edges
+        // blend into the frame instead of showing as a hard rectangle: sky
+        // gradient above, the ground's own tone below.
+        if (padY > 0.5) {
+          const sky = ctx.createLinearGradient(0, -padY, 0, 0)
+          sky.addColorStop(0, '#06061a')
+          sky.addColorStop(1, SKY_TOP)
+          ctx.fillStyle = sky
+          ctx.fillRect(0, -padY, viewW, padY)
+          ctx.fillStyle = GROUND_UNDER
+          ctx.fillRect(0, bandH, viewW, padY)
+        }
+        game.render(ctx, viewW, bandH)
       } catch (err) {
         console.error('[GameCanvas] render error:', err)
       }

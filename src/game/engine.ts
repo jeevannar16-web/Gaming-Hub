@@ -202,6 +202,11 @@ export class Game {
     this.camera.x = 0
   }
 
+  /** Keep the camera framing in step with a resized viewport. */
+  setViewW(viewW: number): void {
+    this.camera.setViewW(viewW)
+  }
+
   get snapshot() {
     return { score: this.score, lives: this.lives, mode: this.mode }
   }

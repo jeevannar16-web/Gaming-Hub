@@ -29,6 +29,17 @@ export class Camera {
   }
 
   /**
+   * Change the view width when the window aspect changes, keeping whatever was
+   * in the middle of the screen in the middle, so a resize never jolts the view.
+   */
+  setViewW(viewW: number): void {
+    if (viewW === this.viewW) return
+    const center = this.x + this.viewW / 2
+    this.viewW = viewW
+    this.x = this.clampX(center - viewW / 2)
+  }
+
+  /**
    * Move the camera toward targetX. The dead zone keeps the camera still while
    * the target sits inside the central band, preventing micro-jitter; beyond it
    * the camera eases exponentially (frame-rate independent).
