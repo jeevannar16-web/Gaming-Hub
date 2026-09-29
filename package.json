@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc && vite build",
+    "build": "npm run build:games && tsc && vite build",
+    "build:games": "node scripts/build-games.mjs",
     "preview": "vite preview"
   },
   "dependencies": {

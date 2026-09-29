@@ -4,6 +4,9 @@ import path from 'path'
 import { defineConfig } from 'vite'
 
 export default defineConfig({
+  // Deployed as a static sub-app of the hub on GitHub Pages:
+  // https://jeevannar16-web.github.io/Gaming-Hub/games/pickora/
+  base: '/Gaming-Hub/games/pickora/',
   plugins: [react(), tailwindcss()],
   resolve: {
     alias: {

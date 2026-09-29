@@ -5,12 +5,16 @@ import HUD from './components/HUD'
 import StartScreen from './components/StartScreen'
 import WinScreen from './components/WinScreen'
 import GameOverScreen from './components/GameOverScreen'
+import HubHome from './components/HubHome'
+import ExitHubButton from './components/ExitHubButton'
 import { InputState } from './game/engine'
 import { unlockAudio } from './game/audio'
 
+type View = 'hub' | 'capquest'
 type GameState = 'menu' | 'playing' | 'win' | 'over'
 
 function App() {
+  const [view, setView] = useState<View>('hub')
   const [gameState, setGameState] = useState<GameState>('menu')
   const [score, setScore] = useState(0)
   const [lives, setLives] = useState(3)
@@ -18,9 +22,12 @@ function App() {
   const inputRef = useRef<InputState>({ left: false, right: false, jumpHeld: false })
   const gameStateRef = useRef(gameState)
   gameStateRef.current = gameState
+  const viewRef = useRef(view)
+  viewRef.current = view
 
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
+      if (viewRef.current !== 'capquest') return
       const state = gameStateRef.current
 
       if (state === 'playing') {
@@ -94,8 +101,13 @@ function App() {
     setGameState('playing')
   }, [])
 
+  if (view === 'hub') {
+    return <HubHome onLaunch={() => setView('capquest')} />
+  }
+
   return (
     <div className="game-container">
+      <ExitHubButton onExit={() => setView('hub')} />
       <GameCanvas
         gameState={gameState}
         inputRef={inputRef}
