@@ -213,10 +213,14 @@ html, body, #root {
   left: 0;
   right: 0;
   padding: 16px 20px;
+  padding-bottom: max(16px, env(safe-area-inset-bottom));
+  padding-left: max(20px, env(safe-area-inset-left));
+  padding-right: max(20px, env(safe-area-inset-right));
   pointer-events: none;
   z-index: 15;
   display: flex;
   justify-content: space-between;
+  touch-action: none;
 }
 
 .touch-dpad {
