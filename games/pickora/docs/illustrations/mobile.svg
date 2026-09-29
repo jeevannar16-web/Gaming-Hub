@@ -1,0 +1,75 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="400" viewBox="0 0 640 400">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#0A0618"/>
+      <stop offset="1" stop-color="#1B1140"/>
+    </linearGradient>
+    <radialGradient id="scr" cx="0.5" cy="0.5" r="0.7">
+      <stop offset="0" stop-color="#221744"/>
+      <stop offset="1" stop-color="#150E33"/>
+    </radialGradient>
+    <linearGradient id="btn" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#8B5CF6"/>
+      <stop offset="1" stop-color="#22D3EE"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="640" height="400" fill="url(#bg)"/>
+
+  <!-- floating chips -->
+  <g>
+    <rect x="40" y="150" width="108" height="38" rx="19" fill="#17102E" stroke="#FFFFFF" stroke-opacity="0.2" stroke-width="1.5"/>
+    <circle cx="68" cy="169" r="8" fill="#8B5CF6"/>
+    <text x="86" y="173" font-family="Arial, Helvetica, sans-serif" font-size="13" fill="#FFFFFF" opacity="0.9">Presentation</text>
+    <rect x="40" y="206" width="108" height="38" rx="19" fill="#17102E" stroke="#FFFFFF" stroke-opacity="0.2" stroke-width="1.5"/>
+    <circle cx="68" cy="225" r="8" fill="#22D3EE"/>
+    <text x="86" y="229" font-family="Arial, Helvetica, sans-serif" font-size="13" fill="#FFFFFF" opacity="0.9">Offline-first</text>
+  </g>
+
+  <!-- phone -->
+  <rect x="205" y="28" width="300" height="344" rx="28" fill="#221539" stroke="#3B2A5E" stroke-width="2"/>
+  <rect x="217" y="40" width="276" height="320" rx="14" fill="url(#scr)"/>
+  <rect x="336" y="44" width="38" height="8" rx="4" fill="#3B2E63"/>
+
+  <!-- mini wheel -->
+  <g stroke="#0A0618" stroke-width="1.8">
+    <path d="M320 170 L320 106 A64 64 0 0 1 365.3 124.7 Z" fill="#8B5CF6"/>
+    <path d="M320 170 L365.3 124.7 A64 64 0 0 1 384 170 Z" fill="#22D3EE"/>
+    <path d="M320 170 L384 170 A64 64 0 0 1 365.3 215.3 Z" fill="#F472B6"/>
+    <path d="M320 170 L365.3 215.3 A64 64 0 0 1 320 234 Z" fill="#34D399"/>
+    <path d="M320 170 L320 234 A64 64 0 0 1 274.7 215.3 Z" fill="#F59E0B"/>
+    <path d="M320 170 L274.7 215.3 A64 64 0 0 1 256 170 Z" fill="#818CF8"/>
+    <path d="M320 170 L256 170 A64 64 0 0 1 274.7 124.7 Z" fill="#2DD4BF"/>
+    <path d="M320 170 L274.7 124.7 A64 64 0 0 1 320 106 Z" fill="#A78BFA"/>
+  </g>
+  <polygon points="320,64 328,86 312,86" fill="#F8FAFC"/>
+  <circle cx="320" cy="170" r="15" fill="#7C3AED" stroke="#FFFFFF" stroke-width="1.2" stroke-opacity="0.5"/>
+  <g transform="translate(320 170) scale(0.95)">
+    <path d="M16 5 L19.2 12.5 L26 13.8 L21 19.2 L22.5 26 L16 21.8 L9.5 26 L11 19.2 L6 13.8 L12.8 12.5 Z" fill="#FFFFFF" opacity="0.95"/>
+  </g>
+
+  <!-- SPIN button -->
+  <rect x="238" y="262" width="164" height="40" rx="20" fill="url(#btn)"/>
+  <text x="320" y="288" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="bold" fill="#FFFFFF" text-anchor="middle" letter-spacing="2">SPIN</text>
+
+  <!-- bottom icon row -->
+  <g>
+    <rect x="236" y="322" width="30" height="26" rx="8" fill="#FFFFFF" opacity="0.1"/>
+    <circle cx="244" cy="332" r="2.2" fill="#FFFFFF" opacity="0.8"/>
+    <circle cx="251" cy="332" r="2.2" fill="#FFFFFF" opacity="0.8"/>
+    <circle cx="258" cy="332" r="2.2" fill="#FFFFFF" opacity="0.8"/>
+    <rect x="374" y="322" width="30" height="26" rx="8" fill="#FFFFFF" opacity="0.1"/>
+    <path d="M379 331 h20 M379 337 h14 M379 343 h20" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" opacity="0.8"/>
+  </g>
+
+  <!-- confetti -->
+  <g>
+    <rect x="180" y="52" width="7" height="5" rx="1" transform="rotate(30 183 54)" fill="#F472B6"/>
+    <rect x="452" y="44" width="7" height="5" rx="1" transform="rotate(-25 455 46)" fill="#22D3EE"/>
+    <circle cx="560" cy="120" r="4" fill="#F59E0B"/>
+    <circle cx="88" cy="120" r="4" fill="#34D399"/>
+    <rect x="520" y="300" width="8" height="5" rx="1" transform="rotate(20 524 302)" fill="#8B5CF6"/>
+    <circle cx="130" cy="320" r="5" fill="#22D3EE"/>
+    <rect x="560" y="340" width="7" height="5" rx="1" transform="rotate(-40 563 342)" fill="#F472B6"/>
+  </g>
+</svg>
