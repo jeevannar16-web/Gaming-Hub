@@ -1,0 +1,47 @@
+# Keeps dependencies patched automatically.
+#
+# The esbuild dev-server advisory (GHSA-67mh-4wv8-2f99) went unnoticed here
+# for a while precisely because nothing was watching dependencies. Dependabot
+# opens a PR instead of merging, so upgrades get reviewed and the build is
+# verified by the Pages workflow before anything ships.
+version: 2
+updates:
+  # Hub dependencies (React, Vite, TypeScript)
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    labels:
+      - dependencies
+    groups:
+      # Group patch/minor bumps so routine updates are one reviewable PR
+      # instead of a stream of noise.
+      npm-patches:
+        update-types:
+          - patch
+          - minor
+
+  # Spinora, vendored under games/pickora
+  - package-ecosystem: npm
+    directory: /games/pickora
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    labels:
+      - dependencies
+    groups:
+      npm-patches:
+        update-types:
+          - patch
+          - minor
+
+  # Keeps the GitHub Actions in deploy.yml current. Those are pinned to commit
+  # SHAs, which is safer but means a SHA bump looks like an unexplained diff;
+  # this PR is what legitimately changes them.
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    labels:
+      - dependencies
