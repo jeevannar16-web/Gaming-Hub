@@ -41,6 +41,9 @@ function App() {
         }
         if (e.code === 'Space' || e.code === 'ArrowUp' || e.code === 'KeyW') {
           inputRef.current.jumpHeld = true
+          // Latch the press so a very quick key tap is never dropped between
+          // frames (ignore auto-repeat, which is not a new jump request).
+          if (!e.repeat) inputRef.current.jumpPressed = true
           e.preventDefault()
         }
         if (e.code === 'Home') {

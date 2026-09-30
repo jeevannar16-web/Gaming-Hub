@@ -37,6 +37,13 @@ export interface InputState {
   left: boolean
   right: boolean
   jumpHeld: boolean
+  /**
+   * Set for one frame when a jump is newly requested. A tap can be shorter than
+   * a single frame, so a plain `jumpHeld` edge can be missed entirely by the
+   * update loop; this latch guarantees a quick tap is never dropped. The engine
+   * clears it after consuming it.
+   */
+  jumpPressed?: boolean
 }
 
 export interface GameCallbacks {
@@ -278,10 +285,15 @@ export class Game {
     if (p.onGround) p.coyote = COYOTE_TIME
     else p.coyote -= dt
 
-    const jumpPressed = input.jumpHeld && !this.prevJump
+    // A jump is requested either by the explicit one-frame latch (which a touch
+    // tap sets, so a sub-frame tap is never lost) or by a rising edge on the
+    // held key/button.
+    const jumpPressed = input.jumpPressed === true || (input.jumpHeld && !this.prevJump)
     this.prevJump = input.jumpHeld
     if (jumpPressed) p.buffer = JUMP_BUFFER
     else if (p.buffer > 0) p.buffer -= dt
+    // Consume the latch so one tap produces exactly one jump.
+    input.jumpPressed = false
 
     if (p.buffer > 0 && (p.onGround || p.coyote > 0 || (p.activePowerUps.includes('doubleJump') && p.jumpsLeft > 0))) {
       p.vy = JUMP_VEL

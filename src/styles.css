@@ -193,6 +193,15 @@ html, body, #root {
   user-select: none;
 }
 
+.overlay-hint {
+  font-size: clamp(11px, 2.4vw, 13px);
+  color: rgba(255, 255, 255, 0.6);
+  margin: 14px 0 0;
+  max-width: 22em;
+  line-height: 1.5;
+  user-select: none;
+}
+
 @keyframes pulse {
   0%, 100% { opacity: 1; }
   50% { opacity: 0.45; }
@@ -205,6 +214,16 @@ html, body, #root {
   color: #fff;
   text-shadow: 0 2px 8px rgba(0,0,0,0.5);
   margin: 8px 0;
+}
+
+/* Full-screen tap-to-jump layer. Transparent, sits above the canvas but below
+   the HUD and overlay screens so their buttons stay tappable. */
+.touch-jump-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  touch-action: none;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .touch-controls {
@@ -224,25 +243,12 @@ html, body, #root {
   touch-action: none;
 }
 
-.touch-jump-zone {
-  flex: 1;
-  max-width: 60%;
-  min-width: 120px;
-  height: 120px;
-  pointer-events: auto;
-  touch-action: none;
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
 .touch-back-zone {
-  width: 100px;
-  height: 100px;
+  position: relative;
+  width: 96px;
+  height: 96px;
   pointer-events: auto;
   touch-action: none;
-  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -251,8 +257,8 @@ html, body, #root {
 
 .touch-btn {
   position: absolute;
-  border-radius: 16px;
-  background: rgba(30, 36, 78, 0.75);
+  border-radius: 50%;
+  background: rgba(30, 36, 78, 0.62);
   backdrop-filter: blur(8px);
   border: 2px solid rgba(242,178,51,0.35);
   display: flex;
@@ -270,56 +276,34 @@ html, body, #root {
 }
 
 .touch-btn svg {
-  width: 50%;
-  height: 50%;
+  width: 46%;
+  height: 46%;
   stroke: #f2b233;
-  stroke-width: 3;
+  stroke-width: 2.6;
   fill: none;
   pointer-events: none;
 }
 
-.jump-btn { width: 100px; height: 100px; border-radius: 50%; }
-.back-btn { width: 80px; height: 80px; border-radius: 50%; }
+.back-btn { width: 78px; height: 78px; }
 
-.auto-run-indicator {
+.back-hint {
   position: absolute;
-  bottom: 140px;
+  bottom: -4px;
   left: 50%;
   transform: translateX(-50%);
-  padding: 4px 12px;
-  border-radius: 20px;
-  background: rgba(30, 36, 78, 0.8);
-  backdrop-filter: blur(8px);
-  border: 2px solid rgba(242,178,51,0.3);
-  color: #f2b233;
-  font-size: 11px;
+  font-size: 9px;
   font-weight: 700;
-  letter-spacing: 0.5px;
+  letter-spacing: 1.2px;
+  color: rgba(242,178,51,0.7);
   text-transform: uppercase;
   pointer-events: none;
-  opacity: 0.7;
-  transition: opacity 0.2s ease;
+  user-select: none;
 }
 
-.auto-run-indicator .active {
-  opacity: 1;
-  border-color: #f2b233;
-  box-shadow: 0 0 12px rgba(242,178,51,0.4);
-}
-
-/* Mobile sizing */
 @media (max-width: 480px) {
-  .touch-jump-zone { min-width: 100px; height: 100px; }
-  .touch-back-zone { width: 88px; height: 88px; }
-  .jump-btn { width: 88px; height: 88px; }
-  .back-btn { width: 72px; height: 72px; }
-  .auto-run-indicator { bottom: 120px; font-size: 10px; padding: 3px 10px; }
+  .touch-back-zone { width: 84px; height: 84px; }
+  .back-btn { width: 68px; height: 68px; }
 }
-
-/* Hide old dpad styles */
-.touch-dpad { display: none; }
-.touch-jump { display: none; }
-.dpad-left, .dpad-right, .dpad-center { display: none; }
 
 /* ==========================================================================
    NEON ARCADE — hub landing

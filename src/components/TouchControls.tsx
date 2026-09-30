@@ -1,115 +1,106 @@
-import { useRef, useCallback, useState, useEffect } from 'react'
+import { useRef, useCallback, useState } from 'react'
 import { InputState } from '../game/engine'
 
 interface TouchControlsProps {
   inputRef: React.MutableRefObject<InputState>
 }
 
+/**
+ * Mobile controls, laid out the way mobile platformers actually work:
+ *
+ *  - The runner moves forward on its own (auto-run), so the player only ever
+ *    needs one thumb for one job.
+ *  - Tapping ANYWHERE on the play area jumps. There is no jump button to hunt
+ *    for, which is how games like these are played.
+ *  - A single hold button in the bottom-left slows/stops and reverses the run,
+ *    for lining up a tricky jump.
+ *
+ * Both actions support multi-touch, so holding back and tapping to jump at the
+ * same time works.
+ */
 function TouchControls({ inputRef }: TouchControlsProps) {
-  const jumpZoneRef = useRef<HTMLDivElement>(null)
   const backZoneRef = useRef<HTMLDivElement>(null)
-  const jumpBtnRef = useRef<HTMLButtonElement>(null)
   const backBtnRef = useRef<HTMLButtonElement>(null)
-  
   const jumpPointers = useRef<Set<number>>(new Set())
   const backPointers = useRef<Set<number>>(new Set())
-  
-  // Auto-run state: true = auto-moving right, false = manual control
-  const [autoRun] = useState(true)
+  const autoRun = true
 
   const updateInput = useCallback(() => {
-    // Auto-run: always move right unless back button is held
     const movingBack = backPointers.current.size > 0
-    const jumping = jumpPointers.current.size > 0
-    
     inputRef.current.right = autoRun && !movingBack
     inputRef.current.left = movingBack
-    inputRef.current.jumpHeld = jumping
-  }, [inputRef, autoRun])
+    inputRef.current.jumpHeld = jumpPointers.current.size > 0
+  }, [inputRef])
 
-  const setBtnPressed = useCallback((btn: HTMLButtonElement | null, pressed: boolean) => {
-    if (btn) btn.classList.toggle('pressed', pressed)
-  }, [])
-
+  // Tap anywhere (the full-screen layer) to jump.
   const handleJumpDown = useCallback((e: React.PointerEvent) => {
+    // Ignore taps that land on the back button, so holding it never jumps.
+    if (backZoneRef.current?.contains(e.target as Node)) return
     e.preventDefault()
-    const target = e.currentTarget as HTMLElement
-    target.setPointerCapture(e.pointerId)
+    // A tap can be shorter than one animation frame, so latch the press. The
+    // engine consumes and clears this, guaranteeing a fast tap always jumps.
+    inputRef.current.jumpPressed = true
     jumpPointers.current.add(e.pointerId)
-    setBtnPressed(jumpBtnRef.current, true)
     updateInput()
-  }, [updateInput, setBtnPressed])
+  }, [updateInput, inputRef])
 
   const handleJumpUp = useCallback((e: React.PointerEvent) => {
     jumpPointers.current.delete(e.pointerId)
-    setBtnPressed(jumpBtnRef.current, false)
     updateInput()
-  }, [updateInput, setBtnPressed])
+  }, [updateInput])
 
   const handleBackDown = useCallback((e: React.PointerEvent) => {
     e.preventDefault()
+    e.stopPropagation()
     const target = e.currentTarget as HTMLElement
-    target.setPointerCapture(e.pointerId)
+    try { target.setPointerCapture(e.pointerId) } catch { /* capture is best-effort */ }
     backPointers.current.add(e.pointerId)
-    setBtnPressed(backBtnRef.current, true)
+    backBtnRef.current?.classList.add('pressed')
     updateInput()
-  }, [updateInput, setBtnPressed])
+  }, [updateInput])
 
   const handleBackUp = useCallback((e: React.PointerEvent) => {
+    e.stopPropagation()
     backPointers.current.delete(e.pointerId)
-    setBtnPressed(backBtnRef.current, false)
+    backBtnRef.current?.classList.remove('pressed')
     updateInput()
-  }, [updateInput, setBtnPressed])
+  }, [updateInput])
 
-  // Detect touch device once during render
   const [isTouchDevice] = useState(() =>
     typeof window !== 'undefined' && ('ontouchstart' in window || navigator.maxTouchPoints > 0)
   )
 
-  // Initialize auto-run on mount
-  useEffect(() => {
-    if (isTouchDevice) {
-      updateInput()
-    }
-  }, [isTouchDevice, updateInput])
-
   if (!isTouchDevice) return null
 
   return (
-    <div className="touch-controls">
-      {/* Jump zone - large area on right side, tap anywhere to jump */}
+    <>
+      {/* Full-screen tap-to-jump layer. Sits under the HUD and overlay screens
+          (which stop propagation) so menu buttons and the HUD stay tappable. */}
       <div
-        ref={jumpZoneRef}
-        className="touch-jump-zone"
+        className="touch-jump-layer"
         onPointerDown={handleJumpDown}
         onPointerUp={handleJumpUp}
-        onPointerLeave={handleJumpUp}
         onPointerCancel={handleJumpUp}
-      >
-        <button ref={jumpBtnRef} className="touch-btn jump-btn" aria-label="Jump">
-          <svg viewBox="0 0 24 24"><path d="M12 18V6M18 12L12 6 6 12"/></svg>
-        </button>
-      </div>
-      
-      {/* Back/stop zone - left side, hold to slow down or move backward */}
-      <div
-        ref={backZoneRef}
-        className="touch-back-zone"
-        onPointerDown={handleBackDown}
-        onPointerUp={handleBackUp}
-        onPointerLeave={handleBackUp}
-        onPointerCancel={handleBackUp}
-      >
-        <button ref={backBtnRef} className="touch-btn back-btn" aria-label="Slow / Back">
-          <svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg>
-        </button>
-      </div>
+        aria-hidden="true"
+      />
 
-      {/* Auto-run indicator */}
-      <div className="auto-run-indicator" aria-hidden="true">
-        <span className={autoRun ? 'active' : ''}>AUTO</span>
+      <div className="touch-controls">
+        {/* Hold to slow / stop / reverse */}
+        <div
+          ref={backZoneRef}
+          className="touch-back-zone"
+          onPointerDown={handleBackDown}
+          onPointerUp={handleBackUp}
+          onPointerCancel={handleBackUp}
+          onPointerLeave={handleBackUp}
+        >
+          <button ref={backBtnRef} className="touch-btn back-btn" aria-label="Hold to slow or reverse">
+            <svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg>
+          </button>
+          <span className="back-hint">HOLD</span>
+        </div>
       </div>
-    </div>
+    </>
   )
 }
 

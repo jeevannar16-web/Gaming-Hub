@@ -27,19 +27,31 @@ function WinScreen({ score, onRestart }: WinScreenProps) {
     requestAnimationFrame(animate)
   }, [score, started])
 
-  const handleClick = () => onRestart()
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.code === 'Space' || e.code === 'Enter') {
-      e.preventDefault()
-      onRestart()
+  const [isTouch] = useState(() =>
+    typeof window !== 'undefined' && ('ontouchstart' in window || navigator.maxTouchPoints > 0)
+  )
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.code === 'Space' || e.code === 'Enter') {
+        e.preventDefault()
+        onRestart()
+      }
     }
-  }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [onRestart])
 
   return (
-    <div className="overlay-screen" onClick={handleClick} onKeyDown={handleKeyDown} tabIndex={0} role="button" aria-label="Press Space or tap to restart">
+    <div
+      className="overlay-screen"
+      onPointerDown={(e) => { e.preventDefault(); onRestart() }}
+      role="button"
+      aria-label={isTouch ? 'Tap to continue' : 'Press Space to continue'}
+    >
       <h1 className="overlay-title">LEVEL CLEAR</h1>
       <div className="overlay-score">{displayScore.toLocaleString()}</div>
-      <p className="overlay-prompt">PRESS SPACE TO CONTINUE</p>
+      <p className="overlay-prompt">{isTouch ? 'TAP TO CONTINUE' : 'PRESS SPACE TO CONTINUE'}</p>
     </div>
   )
 }

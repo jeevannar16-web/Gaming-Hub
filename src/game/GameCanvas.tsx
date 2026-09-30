@@ -24,8 +24,8 @@ export default function GameCanvas({ gameState, inputRef, callbacks }: GameCanva
   const rafRef = useRef<number>(0)
   const lastTimeRef = useRef<number>(0)
   const pausedRef = useRef<boolean>(false)
-  const sizeRef = useRef<{ dpr: number; scale: number; viewW: number; bandH: number; padY: number }>(
-    { dpr: 1, scale: 1, viewW: VIEW_W, bandH: VIEW_H, padY: 0 }
+  const sizeRef = useRef<{ dpr: number; scale: number; viewW: number; viewH: number; bandH: number; bandTop: number }>(
+    { dpr: 1, scale: 1, viewW: VIEW_W, viewH: VIEW_H, bandH: VIEW_H, bandTop: 0 }
   )
 
   const callbacksRef = useRef(callbacks)
@@ -40,6 +40,11 @@ export default function GameCanvas({ gameState, inputRef, callbacks }: GameCanva
       onCheckpoint: (i) => callbacksRef.current.onCheckpoint(i),
     }
     gameRef.current = new Game(buildLevel(), VIEW_W, gameCallbacks)
+    // Test hook for the automated smoke suite. Inert unless the page is loaded
+    // with ?debug=1, so it exposes nothing during normal play.
+    if (new URLSearchParams(window.location.search).get('debug') === '1') {
+      ;(window as unknown as Record<string, unknown>).__cqGame = gameRef.current
+    }
   }
 
   useEffect(() => {
@@ -59,25 +64,58 @@ export default function GameCanvas({ gameState, inputRef, callbacks }: GameCanva
       const dpr = Math.max(1, Math.min(window.devicePixelRatio || 1, 2))
       const w = window.innerWidth
       const h = window.innerHeight
+      const aspect = w / h
 
       // The canvas always covers the whole viewport, so there are never any
       // empty letterbox bars showing the page background. The engine draws in a
       // fixed VIEW_W x VIEW_H design space, so we scale that space uniformly
-      // (no distortion, no cropping) and widen it on wide screens, which shows
-      // more of the level instead of leaving a bar at the left edge.
-      const scale = Math.min(w / VIEW_W, h / VIEW_H)
+      // (no distortion) and pick the framing per aspect ratio:
+      //
+      //  - Wide (aspect >= 1): scale to fit the design height and widen the view
+      //    to cover the full width, showing more of the level.
+      //  - Tall/portrait (phones): scale to fit the design WIDTH but zoom in
+      //    enough that the character is large and readable, then anchor the
+      //    world so the ground sits near the bottom with sky above.
+      let scale: number
+      if (aspect >= 1) {
+        scale = h / VIEW_H
+      } else {
+        // Zoom in well past the full design width so the character is a decent
+        // size on a phone. The cap keeps a useful amount of the level visible
+        // ahead of the player so obstacles can still be read in time.
+        const fitWidth = w / VIEW_W
+        scale = Math.min(fitWidth * 2.4, h / VIEW_H * 0.9)
+        scale = Math.max(scale, fitWidth * 1.5)
+      }
+
       const viewW = Math.ceil(w / scale)
       const viewH = h / scale
-      // Never show less than the designed frame, but stop at the bottom of the
-      // ground block so tall screens pad with sky/ground rather than void.
-      const bandH = Math.min(viewH, WORLD_BOTTOM)
-      const padY = (viewH - bandH) / 2
+
+      // How tall the world band is, and where it starts, in design units.
+      // bandTop is the design Y that maps to the top of the canvas; the engine
+      // always draws the world from y=0, so bandTop is how far we push it down.
+      let bandTop: number
+      let bandH: number
+      if (aspect >= 1) {
+        // Centre the world band vertically, capped at the ground block.
+        bandH = Math.min(viewH, WORLD_BOTTOM)
+        bandTop = (viewH - bandH) / 2
+      } else {
+        // Tall: show the ground block and push it toward the bottom, leaving
+        // sky above. bandTop is a NEGATIVE design offset once the world is
+        // taller than the visible area.
+        bandH = WORLD_BOTTOM
+        // Offset so the ground (GROUND_Y=460) sits at ~82% down the screen,
+        // keeping the character low and large.
+        const groundOnScreen = viewH * 0.82
+        bandTop = groundOnScreen - 460
+      }
 
       canvas.style.width = w + 'px'
       canvas.style.height = h + 'px'
       canvas.width = Math.ceil(w * dpr)
       canvas.height = Math.ceil(h * dpr)
-      sizeRef.current = { dpr, scale, viewW, bandH, padY }
+      sizeRef.current = { dpr, scale, viewW, viewH, bandH, bandTop }
       gameRef.current?.setViewW(viewW)
     }
     resize()
@@ -118,22 +156,28 @@ export default function GameCanvas({ gameState, inputRef, callbacks }: GameCanva
         }
       }
 
-      const { dpr, scale, viewW, bandH, padY } = sizeRef.current
+      const { dpr, scale, viewW, viewH, bandH, bandTop } = sizeRef.current
       ctx.save()
       ctx.setTransform(dpr * scale, 0, 0, dpr * scale, 0, 0)
-      ctx.translate(0, padY)
+      ctx.translate(0, bandTop)
       try {
-        // Fill the vertical padding with the game's own colours so the edges
-        // blend into the frame instead of showing as a hard rectangle: sky
-        // gradient above, the ground's own tone below.
-        if (padY > 0.5) {
-          const sky = ctx.createLinearGradient(0, -padY, 0, 0)
+        // The visible design-space area is y in [bandTop, bandTop + viewH].
+        // Paint any part of that area that the world band does not cover with
+        // the game's own colours, so there is never a hard rectangle: sky
+        // gradient above the world, the ground's own tone below it.
+        const gapTop = Math.max(0, bandTop)                    // sky above the world
+        const gapBottom = Math.max(0, bandTop + viewH - bandH) // ground below
+
+        if (gapTop > 0.5) {
+          const sky = ctx.createLinearGradient(0, -gapTop, 0, 0)
           sky.addColorStop(0, '#06061a')
           sky.addColorStop(1, SKY_TOP)
           ctx.fillStyle = sky
-          ctx.fillRect(0, -padY, viewW, padY)
+          ctx.fillRect(0, -gapTop, viewW, gapTop)
+        }
+        if (gapBottom > 0.5) {
           ctx.fillStyle = GROUND_UNDER
-          ctx.fillRect(0, bandH, viewW, padY)
+          ctx.fillRect(0, bandH, viewW, gapBottom)
         }
         game.render(ctx, viewW, bandH)
       } catch (err) {
