@@ -7,6 +7,7 @@ import WinScreen from './components/WinScreen'
 import GameOverScreen from './components/GameOverScreen'
 import HubHome from './components/HubHome'
 import ExitHubButton from './components/ExitHubButton'
+import FullscreenButton from './components/FullscreenButton'
 import { InputState } from './game/engine'
 import { unlockAudio } from './game/audio'
 
@@ -111,6 +112,7 @@ function App() {
   return (
     <div className="game-container">
       <ExitHubButton onExit={() => setView('hub')} />
+      <FullscreenButton />
       <GameCanvas
         gameState={gameState}
         inputRef={inputRef}

@@ -52,8 +52,13 @@ async function buildGame(name) {
   const outDir = join(publicGamesDir, name)
 
   if (!existsSync(join(gameRootDir, 'node_modules'))) {
-    console.log(`[hub] installing ${name} dependencies…`)
-    execSync('npm install --no-audit --no-fund', { cwd: gameRootDir, stdio: 'inherit' })
+    // Prefer `npm ci`: it installs exactly what the lockfile pins, so a build
+    // (and a CI deploy) can never silently pull in different code than what was
+    // reviewed. Fall back to `npm install` only if there is no lockfile.
+    const hasLock = existsSync(join(gameRootDir, 'package-lock.json'))
+    const cmd = hasLock ? 'npm ci --no-fund' : 'npm install --no-fund'
+    console.log(`[hub] installing ${name} dependencies (${hasLock ? 'npm ci' : 'npm install'})…`)
+    execSync(cmd, { cwd: gameRootDir, stdio: 'inherit' })
   }
 
   console.log(`[hub] building ${name}…`)

@@ -699,6 +699,45 @@ html, body, #root {
 }
 .exit-hub-btn:active { transform: scale(0.96); }
 
+/* Fullscreen toggle: same pill language as the Arcade button, but icon-only so
+   it stays compact on a phone. */
+.fullscreen-btn {
+  position: absolute;
+  top: 54px;
+  right: 108px;
+  z-index: 30;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: rgba(11, 11, 26, 0.72);
+  backdrop-filter: blur(10px);
+  color: #e8e8ff;
+  cursor: pointer;
+  box-shadow: 0 6px 22px rgba(0, 0, 0, 0.4);
+  transition: transform 0.15s ease, border-color 0.15s ease;
+  /* Comfortable touch target without visually dominating the HUD. */
+  touch-action: manipulation;
+}
+.fullscreen-btn svg {
+  width: 16px;
+  height: 16px;
+  stroke: #34f5ff;
+}
+.fullscreen-btn:hover {
+  transform: translateY(-1px);
+  border-color: rgba(52, 245, 255, 0.5);
+}
+.fullscreen-btn:active { transform: scale(0.94); }
+
+@media (max-width: 480px) {
+  .exit-hub-btn { padding: 8px 11px; font-size: 11px; letter-spacing: 1.4px; }
+  .fullscreen-btn { right: 92px; width: 34px; height: 34px; }
+}
+
 /* responsive */
 @media (max-width: 840px) {
   .hub-grid {
