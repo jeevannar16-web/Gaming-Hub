@@ -16,7 +16,7 @@
   </a>
   <img alt="Games" src="https://img.shields.io/badge/Games-2-FFD166?style=for-the-badge" />
   <img alt="React" src="https://img.shields.io/badge/Hub-React-18-61DAFB?style=for-the-badge&logo=react&logoColor=black" />
-  <img alt="Vite" src="https://img.shields.io/badge/Hub-Vite-5-646CFF?style=for-the-badge&logo=vite&logoColor=white" />
+  <img alt="Vite" src="https://img.shields.io/badge/Hub-Vite-7-646CFF?style=for-the-badge&logo=vite&logoColor=white" />
   <img alt="TypeScript" src="https://img.shields.io/badge/TypeScript-5.6-3178C6?style=for-the-badge&logo=typescript&logoColor=white" />
   <img alt="Spinora license" src="https://img.shields.io/badge/Spinora-MIT-2EA043?style=for-the-badge" />
 </p>
