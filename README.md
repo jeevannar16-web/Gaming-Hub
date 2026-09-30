@@ -14,11 +14,13 @@
   <a href="https://jeevannar16-web.github.io/Gaming-Hub/">
     <img alt="Live site" src="https://img.shields.io/badge/Live-Neon%20Arcade-FF2FB8?style=for-the-badge" />
   </a>
+  <a href="https://jeevannar16-web.github.io/Gaming-Hub/games/pickora/">
+    <img alt="Spinora" src="https://img.shields.io/badge/Spinora-Play-2EA043?style=for-the-badge" />
+  </a>
   <img alt="Games" src="https://img.shields.io/badge/Games-2-FFD166?style=for-the-badge" />
   <img alt="React" src="https://img.shields.io/badge/Hub-React-18-61DAFB?style=for-the-badge&logo=react&logoColor=black" />
   <img alt="Vite" src="https://img.shields.io/badge/Hub-Vite-7-646CFF?style=for-the-badge&logo=vite&logoColor=white" />
   <img alt="TypeScript" src="https://img.shields.io/badge/TypeScript-5.6-3178C6?style=for-the-badge&logo=typescript&logoColor=white" />
-  <img alt="Spinora license" src="https://img.shields.io/badge/Spinora-MIT-2EA043?style=for-the-badge" />
 </p>
 
 **▶ Play it live:** <https://jeevannar16-web.github.io/Gaming-Hub/> — pick a card, and you're in.
