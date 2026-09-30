@@ -1,4 +1,4 @@
-import { useRef, useCallback, useState } from 'react'
+import { useRef, useCallback, useState, useEffect } from 'react'
 import { InputState } from '../game/engine'
 
 interface TouchControlsProps {
@@ -6,136 +6,108 @@ interface TouchControlsProps {
 }
 
 function TouchControls({ inputRef }: TouchControlsProps) {
-  const dpadRef = useRef<HTMLDivElement>(null)
-  const jumpRef = useRef<HTMLDivElement>(null)
-  const leftPointers = useRef<Set<number>>(new Set())
-  const rightPointers = useRef<Set<number>>(new Set())
-  const jumpPointers = useRef<Set<number>>(new Set())
-  const leftBtnRef = useRef<HTMLButtonElement>(null)
-  const rightBtnRef = useRef<HTMLButtonElement>(null)
+  const jumpZoneRef = useRef<HTMLDivElement>(null)
+  const backZoneRef = useRef<HTMLDivElement>(null)
   const jumpBtnRef = useRef<HTMLButtonElement>(null)
+  const backBtnRef = useRef<HTMLButtonElement>(null)
+  
+  const jumpPointers = useRef<Set<number>>(new Set())
+  const backPointers = useRef<Set<number>>(new Set())
+  
+  // Auto-run state: true = auto-moving right, false = manual control
+  const [autoRun] = useState(true)
 
   const updateInput = useCallback(() => {
-    inputRef.current.left = leftPointers.current.size > 0
-    inputRef.current.right = rightPointers.current.size > 0
-    inputRef.current.jumpHeld = jumpPointers.current.size > 0
-  }, [inputRef])
+    // Auto-run: always move right unless back button is held
+    const movingBack = backPointers.current.size > 0
+    const jumping = jumpPointers.current.size > 0
+    
+    inputRef.current.right = autoRun && !movingBack
+    inputRef.current.left = movingBack
+    inputRef.current.jumpHeld = jumping
+  }, [inputRef, autoRun])
 
   const setBtnPressed = useCallback((btn: HTMLButtonElement | null, pressed: boolean) => {
     if (btn) btn.classList.toggle('pressed', pressed)
   }, [])
 
-  const getDpadSide = useCallback((clientX: number): 'left' | 'right' | null => {
-    const dpad = dpadRef.current
-    if (!dpad) return null
-    const rect = dpad.getBoundingClientRect()
-    const centerX = rect.left + rect.width / 2
-    if (clientX < centerX) return 'left'
-    return 'right'
-  }, [])
-
-  const handlePointerDown = useCallback((e: React.PointerEvent, zone: 'dpad' | 'jump') => {
+  const handleJumpDown = useCallback((e: React.PointerEvent) => {
     e.preventDefault()
     const target = e.currentTarget as HTMLElement
     target.setPointerCapture(e.pointerId)
-
-    if (zone === 'jump') {
-      jumpPointers.current.add(e.pointerId)
-      setBtnPressed(jumpBtnRef.current, true)
-    } else {
-      const side = getDpadSide(e.clientX)
-      if (side === 'left') {
-        leftPointers.current.add(e.pointerId)
-        setBtnPressed(leftBtnRef.current, true)
-      } else if (side === 'right') {
-        rightPointers.current.add(e.pointerId)
-        setBtnPressed(rightBtnRef.current, true)
-      }
-    }
-    updateInput()
-  }, [getDpadSide, updateInput, setBtnPressed])
-
-  const handlePointerMove = useCallback((e: React.PointerEvent) => {
-    if (e.currentTarget === dpadRef.current) {
-      const side = getDpadSide(e.clientX)
-      if (side === 'left') {
-        rightPointers.current.delete(e.pointerId)
-        leftPointers.current.add(e.pointerId)
-        setBtnPressed(rightBtnRef.current, false)
-        setBtnPressed(leftBtnRef.current, true)
-      } else if (side === 'right') {
-        leftPointers.current.delete(e.pointerId)
-        rightPointers.current.add(e.pointerId)
-        setBtnPressed(leftBtnRef.current, false)
-        setBtnPressed(rightBtnRef.current, true)
-      }
-      updateInput()
-    }
-  }, [getDpadSide, updateInput, setBtnPressed])
-
-  const handlePointerUp = useCallback((e: React.PointerEvent, zone: 'dpad' | 'jump') => {
-    leftPointers.current.delete(e.pointerId)
-    rightPointers.current.delete(e.pointerId)
-    jumpPointers.current.delete(e.pointerId)
-    if (zone === 'dpad') {
-      setBtnPressed(leftBtnRef.current, false)
-      setBtnPressed(rightBtnRef.current, false)
-    } else {
-      setBtnPressed(jumpBtnRef.current, false)
-    }
+    jumpPointers.current.add(e.pointerId)
+    setBtnPressed(jumpBtnRef.current, true)
     updateInput()
   }, [updateInput, setBtnPressed])
 
-  const handlePointerLeave = useCallback((e: React.PointerEvent, zone: 'dpad' | 'jump') => {
-    leftPointers.current.delete(e.pointerId)
-    rightPointers.current.delete(e.pointerId)
+  const handleJumpUp = useCallback((e: React.PointerEvent) => {
     jumpPointers.current.delete(e.pointerId)
-    if (zone === 'dpad') {
-      setBtnPressed(leftBtnRef.current, false)
-      setBtnPressed(rightBtnRef.current, false)
-    } else {
-      setBtnPressed(jumpBtnRef.current, false)
-    }
+    setBtnPressed(jumpBtnRef.current, false)
     updateInput()
   }, [updateInput, setBtnPressed])
 
-  // Detect once during render (SSR-safe; Vite is client-only anyway)
+  const handleBackDown = useCallback((e: React.PointerEvent) => {
+    e.preventDefault()
+    const target = e.currentTarget as HTMLElement
+    target.setPointerCapture(e.pointerId)
+    backPointers.current.add(e.pointerId)
+    setBtnPressed(backBtnRef.current, true)
+    updateInput()
+  }, [updateInput, setBtnPressed])
+
+  const handleBackUp = useCallback((e: React.PointerEvent) => {
+    backPointers.current.delete(e.pointerId)
+    setBtnPressed(backBtnRef.current, false)
+    updateInput()
+  }, [updateInput, setBtnPressed])
+
+  // Detect touch device once during render
   const [isTouchDevice] = useState(() =>
     typeof window !== 'undefined' && ('ontouchstart' in window || navigator.maxTouchPoints > 0)
   )
+
+  // Initialize auto-run on mount
+  useEffect(() => {
+    if (isTouchDevice) {
+      updateInput()
+    }
+  }, [isTouchDevice, updateInput])
 
   if (!isTouchDevice) return null
 
   return (
     <div className="touch-controls">
+      {/* Jump zone - large area on right side, tap anywhere to jump */}
       <div
-        ref={dpadRef}
-        className="touch-dpad"
-        onPointerDown={(e) => handlePointerDown(e, 'dpad')}
-        onPointerMove={handlePointerMove}
-        onPointerUp={(e) => handlePointerUp(e, 'dpad')}
-        onPointerLeave={(e) => handlePointerLeave(e, 'dpad')}
-        onPointerCancel={(e) => handlePointerUp(e, 'dpad')}
-      >
-        <button ref={leftBtnRef} className="touch-btn dpad-left" aria-label="Left">
-          <svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg>
-        </button>
-        <div className="touch-btn dpad-center" />
-        <button ref={rightBtnRef} className="touch-btn dpad-right" aria-label="Right">
-          <svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg>
-        </button>
-      </div>
-      <div
-        ref={jumpRef}
-        className="touch-jump"
-        onPointerDown={(e) => handlePointerDown(e, 'jump')}
-        onPointerUp={(e) => handlePointerUp(e, 'jump')}
-        onPointerLeave={(e) => handlePointerLeave(e, 'jump')}
-        onPointerCancel={(e) => handlePointerUp(e, 'jump')}
+        ref={jumpZoneRef}
+        className="touch-jump-zone"
+        onPointerDown={handleJumpDown}
+        onPointerUp={handleJumpUp}
+        onPointerLeave={handleJumpUp}
+        onPointerCancel={handleJumpUp}
       >
         <button ref={jumpBtnRef} className="touch-btn jump-btn" aria-label="Jump">
           <svg viewBox="0 0 24 24"><path d="M12 18V6M18 12L12 6 6 12"/></svg>
         </button>
+      </div>
+      
+      {/* Back/stop zone - left side, hold to slow down or move backward */}
+      <div
+        ref={backZoneRef}
+        className="touch-back-zone"
+        onPointerDown={handleBackDown}
+        onPointerUp={handleBackUp}
+        onPointerLeave={handleBackUp}
+        onPointerCancel={handleBackUp}
+      >
+        <button ref={backBtnRef} className="touch-btn back-btn" aria-label="Slow / Back">
+          <svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg>
+        </button>
+      </div>
+
+      {/* Auto-run indicator */}
+      <div className="auto-run-indicator" aria-hidden="true">
+        <span className={autoRun ? 'active' : ''}>AUTO</span>
       </div>
     </div>
   )

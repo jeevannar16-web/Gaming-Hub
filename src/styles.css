@@ -220,23 +220,33 @@ html, body, #root {
   z-index: 15;
   display: flex;
   justify-content: space-between;
+  align-items: flex-end;
   touch-action: none;
 }
 
-.touch-dpad {
-  width: 140px;
-  height: 140px;
+.touch-jump-zone {
+  flex: 1;
+  max-width: 60%;
+  min-width: 120px;
+  height: 120px;
   pointer-events: auto;
   touch-action: none;
   position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.touch-jump {
+.touch-back-zone {
   width: 100px;
   height: 100px;
   pointer-events: auto;
   touch-action: none;
   position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
 }
 
 .touch-btn {
@@ -268,17 +278,48 @@ html, body, #root {
   pointer-events: none;
 }
 
-.dpad-left { left: 0; top: 50%; transform: translateY(-50%); width: 60px; height: 60px; border-top-left-radius: 16px; border-bottom-left-radius: 16px; }
-.dpad-right { right: 0; top: 50%; transform: translateY(-50%); width: 60px; height: 60px; border-top-right-radius: 16px; border-bottom-right-radius: 16px; }
-.dpad-center { left: 50%; top: 50%; transform: translate(-50%, -50%); width: 20px; height: 100%; background: transparent; border: none; pointer-events: none; }
-.jump-btn { right: 0; top: 50%; transform: translateY(-50%); width: 100px; height: 100px; border-radius: 50%; }
+.jump-btn { width: 100px; height: 100px; border-radius: 50%; }
+.back-btn { width: 80px; height: 80px; border-radius: 50%; }
 
-@media (max-width: 480px) {
-  .touch-dpad { width: 120px; height: 120px; }
-  .touch-jump { width: 88px; height: 88px; }
-  .jump-btn { width: 88px; height: 88px; }
-  .dpad-left, .dpad-right { width: 52px; height: 52px; }
+.auto-run-indicator {
+  position: absolute;
+  bottom: 140px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 4px 12px;
+  border-radius: 20px;
+  background: rgba(30, 36, 78, 0.8);
+  backdrop-filter: blur(8px);
+  border: 2px solid rgba(242,178,51,0.3);
+  color: #f2b233;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  pointer-events: none;
+  opacity: 0.7;
+  transition: opacity 0.2s ease;
 }
+
+.auto-run-indicator .active {
+  opacity: 1;
+  border-color: #f2b233;
+  box-shadow: 0 0 12px rgba(242,178,51,0.4);
+}
+
+/* Mobile sizing */
+@media (max-width: 480px) {
+  .touch-jump-zone { min-width: 100px; height: 100px; }
+  .touch-back-zone { width: 88px; height: 88px; }
+  .jump-btn { width: 88px; height: 88px; }
+  .back-btn { width: 72px; height: 72px; }
+  .auto-run-indicator { bottom: 120px; font-size: 10px; padding: 3px 10px; }
+}
+
+/* Hide old dpad styles */
+.touch-dpad { display: none; }
+.touch-jump { display: none; }
+.dpad-left, .dpad-right, .dpad-center { display: none; }
 
 /* ==========================================================================
    NEON ARCADE — hub landing
