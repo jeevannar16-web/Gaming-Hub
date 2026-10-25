@@ -6,9 +6,7 @@
 
 # 🎮 Neon Arcade
 
-> **A pocket arcade** — two polished games behind one neon landing page. Each game is an
-> independent app with its own build, so the hub stays fast and nothing bleeds between them.
-> Everything runs in the browser — no accounts, no installs, no server.
+> *A pocket arcade that keeps growing. Every game is an independent app with its own build, so the hub stays fast and nothing bleeds between them. Everything runs in the browser, with no accounts, no installs and no server.
 
 <p align="center">
   <a href="https://jeevannar16-web.github.io/Gaming-Hub/">
